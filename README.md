@@ -1,4 +1,6 @@
-# Inlämningsuppgiften: Webbshoppen
+- [ERD (Lucidchart)](https://lucid.app/lucidchart/f25db3e7-9bcf-4475-9461-9dd03ea9e1cc/view)
+
+# Webbshoppen
 
 ## Beskrivning
 Ni ska bygga en “webb”-shop som säljer ett valfritt sortiment. Webbshoppen ska ha följande funktionalitet:
