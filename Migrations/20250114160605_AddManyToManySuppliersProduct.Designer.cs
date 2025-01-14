@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using consoleshoppen;
 
@@ -10,9 +11,11 @@ using consoleshoppen;
 namespace consoleshoppen.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
-    partial class ShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250114160605_AddManyToManySuppliersProduct")]
+    partial class AddManyToManySuppliersProduct
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +36,12 @@ namespace consoleshoppen.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Colors");
                 });
@@ -45,9 +53,6 @@ namespace consoleshoppen.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ColorId")
-                        .HasColumnType("int");
 
                     b.Property<string>("Description")
                         .HasColumnType("nvarchar(max)");
@@ -62,18 +67,10 @@ namespace consoleshoppen.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("SizeId")
-                        .HasColumnType("int");
-
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
-                    b.Property<int>("SupplierId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("SupplierId");
 
                     b.ToTable("Products");
                 });
@@ -93,12 +90,7 @@ namespace consoleshoppen.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("ProductId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
 
                     b.ToTable("ProductCategories");
                 });
@@ -115,7 +107,12 @@ namespace consoleshoppen.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int?>("ProductId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Sizes");
                 });
@@ -146,30 +143,85 @@ namespace consoleshoppen.Migrations
                     b.ToTable("Suppliers");
                 });
 
-            modelBuilder.Entity("Models.Product", b =>
+            modelBuilder.Entity("ProductProductCategory", b =>
                 {
-                    b.HasOne("Models.Supplier", null)
-                        .WithMany("Products")
-                        .HasForeignKey("SupplierId")
+                    b.Property<int>("ProductCategoriesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductCategoriesId", "ProductsId");
+
+                    b.HasIndex("ProductsId");
+
+                    b.ToTable("ProductProductCategory");
+                });
+
+            modelBuilder.Entity("ProductSupplier", b =>
+                {
+                    b.Property<int>("ProductsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SuppliersId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductsId", "SuppliersId");
+
+                    b.HasIndex("SuppliersId");
+
+                    b.ToTable("ProductSupplier");
+                });
+
+            modelBuilder.Entity("Models.Color", b =>
+                {
+                    b.HasOne("Models.Product", null)
+                        .WithMany("Colors")
+                        .HasForeignKey("ProductId");
+                });
+
+            modelBuilder.Entity("Models.Size", b =>
+                {
+                    b.HasOne("Models.Product", null)
+                        .WithMany("Sizes")
+                        .HasForeignKey("ProductId");
+                });
+
+            modelBuilder.Entity("ProductProductCategory", b =>
+                {
+                    b.HasOne("Models.ProductCategory", null)
+                        .WithMany()
+                        .HasForeignKey("ProductCategoriesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Product", null)
+                        .WithMany()
+                        .HasForeignKey("ProductsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Models.ProductCategory", b =>
+            modelBuilder.Entity("ProductSupplier", b =>
                 {
                     b.HasOne("Models.Product", null)
-                        .WithMany("ProductCategories")
-                        .HasForeignKey("ProductId");
+                        .WithMany()
+                        .HasForeignKey("ProductsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Models.Supplier", null)
+                        .WithMany()
+                        .HasForeignKey("SuppliersId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Models.Product", b =>
                 {
-                    b.Navigation("ProductCategories");
-                });
+                    b.Navigation("Colors");
 
-            modelBuilder.Entity("Models.Supplier", b =>
-                {
-                    b.Navigation("Products");
+                    b.Navigation("Sizes");
                 });
 #pragma warning restore 612, 618
         }

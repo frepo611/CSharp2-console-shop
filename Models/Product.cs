@@ -8,11 +8,12 @@
         public decimal Price { get; set; }
         public int Stock { get; set; }
         public bool IsFeatured { get; set; }
+        // Foreign keys
+        public int ColorId { get; set; }
+        public int SizeId { get; set; }
+        public int SupplierId { get; set; }
         // Navigation properties
         public required virtual ICollection<ProductCategory> ProductCategories { get; set; }
-        public required virtual ICollection<Supplier> Suppliers { get; set; }
-        public required virtual ICollection<Size> Sizes { get; set; }
-        public virtual ICollection<Color>? Colors { get; set; }
 
     }
 }
