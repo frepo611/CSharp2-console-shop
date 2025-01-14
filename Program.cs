@@ -1,2 +1,9 @@
-﻿// See https://aka.ms/new-console-template for more information
-Console.WriteLine("Hello, World!");
+﻿namespace consoleshoppen;
+
+internal class Program
+{
+    private static void Main(string[] args)
+    {
+        var dbContext = new ShopDbContext();
+    }
+}
