@@ -1,4 +1,6 @@
-﻿namespace Models
+﻿using consoleshoppen.Models;
+
+namespace Models
 {
     public class Product
     {
@@ -9,11 +11,15 @@
         public int Stock { get; set; }
         public bool IsFeatured { get; set; }
         // Foreign keys
-        public int ColorId { get; set; }
-        public int SizeId { get; set; }
         public int SupplierId { get; set; }
         // Navigation properties
-        public required virtual ICollection<ProductCategory> ProductCategories { get; set; }
+        public ICollection<ProductCategory> ProductCategories { get; set; } = new List<ProductCategory>();
+        public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
 
+        // Method to update stock based on ProductVariants
+        public void UpdateStock()
+        {
+            Stock = ProductVariants?.Sum(pv => pv.Quantity) ?? 0;
+        }
     }
 }
