@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations.Schema;
+﻿using Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
-namespace Models;
+namespace consoleshoppen.Models;
 
 public class Supplier
 {
