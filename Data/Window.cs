@@ -1,4 +1,6 @@
-﻿namespace consoleshoppen.Data;
+﻿using System.Drawing;
+
+namespace consoleshoppen.Data;
 
 public class Window
 {
@@ -15,8 +17,9 @@ public class Window
         TextRows = textRows;
     }
 
-    public void Draw()
+    public Coordinate Draw()
     {
+        Console.SetWindowSize(200, 60);
         var width = TextRows.OrderByDescending(s => s.Length).FirstOrDefault().Length;
 
         // Kolla om Header är längre än det längsta ordet i listan
@@ -59,6 +62,15 @@ public class Window
         }
 
         Console.SetCursorPosition(0, Lowest.LowestPosition);
+
+        Coordinate lowerRightCorner = new Coordinate { Left = Left + width + 4, Top = Top + TextRows.Count + 2 };
+        return lowerRightCorner;
+    }
+
+    public class Coordinate
+    {
+        public int Left { get; set; }
+        public int Top { get; set; }
     }
 }
 
