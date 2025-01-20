@@ -1,5 +1,5 @@
 namespace consoleshoppen.Data;
-
+using static ListExtensions;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,13 +12,17 @@ public class ContentReader
         _dbContext = dbContext;
     }
 
-    public List<string> GetProducts()
+    public List<string> GetCategoryProductsInStock(int categoryId)
     {
-        var products = _dbContext.Products.Include(p => p.ProductCategories).ToList();
-        var results = new List<string>(); 
+        var products = _dbContext.Products
+                                .Include(p => p.ProductCategories)
+                                .Where(p => p.ProductCategories
+                                .Any(pc => pc.Id == categoryId) && p.Stock > 0)
+                                .ToList();
+        var results = new List<string>();
         foreach (var product in products)
         {
-            results.Add($" {product.ProductCategories.First().Name,-12} Product ID: {product.Id,-2} Name: {product.Name,-20} Price: {product.Price,-5} Stock: {product.Stock}");
+            results.Add($"{product.Id,-2}. {product.Name,-20} Price: {product.Price,-5}");
         }
         return results;
     }
@@ -66,4 +70,14 @@ public class ContentReader
         }
         return results;
     }
-}
+    public List<string> GetFeaturedProducts(int productCount)
+    {
+        var products = _dbContext.Products.Where(p => p.IsFeatured).ToList();
+        products.Shuffle();
+        var randomProducts = products.Take(productCount);
+
+        var results = new List<string>();
+
+        return results;
+    }
+  }
