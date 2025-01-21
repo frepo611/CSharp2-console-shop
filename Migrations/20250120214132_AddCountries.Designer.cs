@@ -11,8 +11,8 @@ using consoleshoppen.Models;
 namespace consoleshoppen.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
-    [Migration("20250115163530_OneToManyForProductCategories")]
-    partial class OneToManyForProductCategories
+    [Migration("20250120214132_AddCountries")]
+    partial class AddCountries
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -75,26 +75,6 @@ namespace consoleshoppen.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("Models.ProductCategory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("ProductCategories");
-                });
-
             modelBuilder.Entity("Models.ProductVariant", b =>
                 {
                     b.Property<int>("Id")
@@ -143,7 +123,59 @@ namespace consoleshoppen.Migrations
                     b.ToTable("Sizes");
                 });
 
-            modelBuilder.Entity("Models.Supplier", b =>
+            modelBuilder.Entity("ProductProductCategory", b =>
+                {
+                    b.Property<int>("ProductCategoriesId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("ProductCategoriesId", "ProductsId");
+
+                    b.HasIndex("ProductsId");
+
+                    b.ToTable("ProductProductCategory");
+                });
+
+            modelBuilder.Entity("consoleshoppen.Models.Country", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Countries");
+                });
+
+            modelBuilder.Entity("consoleshoppen.Models.ProductCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ProductCategories");
+                });
+
+            modelBuilder.Entity("consoleshoppen.Models.Supplier", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -169,24 +201,9 @@ namespace consoleshoppen.Migrations
                     b.ToTable("Suppliers");
                 });
 
-            modelBuilder.Entity("ProductProductCategory", b =>
-                {
-                    b.Property<int>("ProductCategoriesId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ProductsId")
-                        .HasColumnType("int");
-
-                    b.HasKey("ProductCategoriesId", "ProductsId");
-
-                    b.HasIndex("ProductsId");
-
-                    b.ToTable("ProductProductCategory");
-                });
-
             modelBuilder.Entity("Models.Product", b =>
                 {
-                    b.HasOne("Models.Supplier", null)
+                    b.HasOne("consoleshoppen.Models.Supplier", null)
                         .WithMany("Products")
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -222,7 +239,7 @@ namespace consoleshoppen.Migrations
 
             modelBuilder.Entity("ProductProductCategory", b =>
                 {
-                    b.HasOne("Models.ProductCategory", null)
+                    b.HasOne("consoleshoppen.Models.ProductCategory", null)
                         .WithMany()
                         .HasForeignKey("ProductCategoriesId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -240,7 +257,7 @@ namespace consoleshoppen.Migrations
                     b.Navigation("ProductVariants");
                 });
 
-            modelBuilder.Entity("Models.Supplier", b =>
+            modelBuilder.Entity("consoleshoppen.Models.Supplier", b =>
                 {
                     b.Navigation("Products");
                 });

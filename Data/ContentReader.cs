@@ -2,6 +2,7 @@ namespace consoleshoppen.Data;
 using static ListExtensions;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
+using consoleshoppen.Models;
 
 public class ContentReader
 {

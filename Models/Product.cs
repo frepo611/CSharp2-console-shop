@@ -1,6 +1,4 @@
-﻿using consoleshoppen.Models;
-
-namespace Models
+﻿namespace consoleshoppen.Models
 {
     public class Product
     {

@@ -1,8 +1,8 @@
 ﻿namespace consoleshoppen.Models
 {
-    public class Color
+    public class ShoppingCart
     {
         public int Id { get; set; }
-        public required string Name { get; set; }
+        public int CustomerId { get; set; }
     }
 }

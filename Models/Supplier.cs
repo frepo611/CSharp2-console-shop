@@ -1,6 +1,4 @@
-﻿using Models;
-
-namespace consoleshoppen.Models;
+﻿namespace consoleshoppen.Models;
 
 public class Supplier
 {

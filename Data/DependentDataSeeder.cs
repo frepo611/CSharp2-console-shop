@@ -1,5 +1,4 @@
 using consoleshoppen.Models;
-using Models;
 
 namespace consoleshoppen.Data;
 

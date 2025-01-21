@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using consoleshoppen.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace consoleshoppen.Data;
 

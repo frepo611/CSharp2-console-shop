@@ -1,6 +1,5 @@
 using consoleshoppen.Models;
 using Microsoft.EntityFrameworkCore;
-using Models;
 
 namespace consoleshoppen.Data
 {
