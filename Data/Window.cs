@@ -19,7 +19,6 @@ public class Window
 
     public Coordinate Draw()
     {
-        Console.SetWindowSize(200, 60);
         var width = TextRows.OrderByDescending(s => s.Length).FirstOrDefault().Length;
 
         // Kolla om Header är längre än det längsta ordet i listan

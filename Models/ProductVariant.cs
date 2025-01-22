@@ -9,7 +9,7 @@ public class ProductVariant
     public int Quantity { get; set; }
 
     // Navigation properties
-    public required virtual Product Product { get; set; }
-    public required virtual Color Color { get; set; }
-    public required virtual Size Size { get; set; }
+    public  virtual Product Product { get; set; }
+    public  virtual Color Color { get; set; }
+    public  virtual Size Size { get; set; }
 }
