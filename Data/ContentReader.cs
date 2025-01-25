@@ -39,16 +39,16 @@ public class ContentReader
         return results;
     }
 
-    public List<string> GetColors()
-    {
-        var colors = _dbContext.Colors.ToList();
-        var results = new List<string>();
-        foreach (var color in colors)
-        {
-            results.Add($"{color.Id} {color.Name}");
-        }
-        return results;
-    }
+    //public List<string> GetColors()
+    //{
+    //    var colors = _dbContext.Colors.ToList();
+    //    var results = new List<string>();
+    //    foreach (var color in colors)
+    //    {
+    //        results.Add($"{color.Id} {color.Name}");
+    //    }
+    //    return results;
+    //}
 
     public List<string> GetSuppliers()
     {
@@ -61,16 +61,16 @@ public class ContentReader
         return results;
     }
 
-    public List<string> GetSizes()
-    {
-        var sizes = _dbContext.Sizes.ToList();
-        var results = new List<string>();
-        foreach (var size in sizes)
-        {
-            results.Add($"Size ID: {size.Id}, Name: {size.Name}");
-        }
-        return results;
-    }
+    //public List<string> GetSizes()
+    //{
+    //    var sizes = _dbContext.Sizes.ToList();
+    //    var results = new List<string>();
+    //    foreach (var size in sizes)
+    //    {
+    //        results.Add($"Size ID: {size.Id}, Name: {size.Name}");
+    //    }
+    //    return results;
+    //}
     public List<string> GetFeaturedProducts(int productCount)
     {
         var products = _dbContext.Products.Where(p => p.IsFeatured).ToList();
