@@ -4,11 +4,11 @@ namespace consoleshoppen.Data;
 
 public class Window
 {
-    public string Header { get; set; }
-    public int Left { get; set; }
-    public int Top { get; set; }
-    public List<string> TextRows { get; set; }
-
+    public string Header { get; }
+    public int Left { get; }
+    public int Top { get; }
+    public List<string> TextRows { get; }
+    public Point LowerRightCorner { get; private set; }
     public Window(string header, int left, int top, List<string> textRows)
     {
         Header = header;
@@ -17,7 +17,7 @@ public class Window
         TextRows = textRows;
     }
 
-    public Coordinate Draw()
+    public void Draw()
     {
         var width = TextRows.OrderByDescending(s => s.Length).FirstOrDefault().Length;
 
@@ -62,8 +62,8 @@ public class Window
 
         Console.SetCursorPosition(0, Lowest.LowestPosition);
 
-        Coordinate lowerRightCorner = new Coordinate { Left = Left + width + 4, Top = Top + TextRows.Count + 2 };
-        return lowerRightCorner;
+        Point lowerRightCorner = new Point(Left + width + 4, Top + TextRows.Count + 2);
+        LowerRightCorner = lowerRightCorner;
     }
 
     public class Coordinate

@@ -1,4 +1,5 @@
-﻿namespace consoleshoppen.Models
+﻿
+namespace consoleshoppen.Models
 {
     public class Product
     {
@@ -18,6 +19,17 @@
         public void UpdateStock()
         {
             Stock = ProductVariants?.Sum(pv => pv.Quantity) ?? 0;
+        }
+        public override string ToString()
+        {
+            return $"{Name} {Price}";
+        }
+
+        internal List<string> ToList()
+        {
+            var result = new List<string>();
+            result.AddRange([$"{Name} {Price}",$"{Description}"]);
+            return result;
         }
     }
 }

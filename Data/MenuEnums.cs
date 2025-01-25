@@ -53,5 +53,11 @@ internal class Menues
         Uppdatera_kunduppgifter,
         Se_orderhistorik,
     }
+
+    public enum AddProductsToCart
+    {
+        Tillbaka = 0,
+        Lägg_i_kundkorg,
+    }
 }
 

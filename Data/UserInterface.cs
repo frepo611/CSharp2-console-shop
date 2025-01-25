@@ -13,9 +13,13 @@ internal class UserInterface
     private Window _adminMenu;
     private Window _manageProductsMenu;
     private Window _categoryMenu;
-    private Window _productWindow;
+    private Window _productsInCategoryWindow;
     private Window _shoppingCartWindow;
     private Window _checkoutWindow;
+    private Window _addToCartMenu;
+    private Window _productWindow;
+    private Window _addProductsToCartMenu;
+    private Window _cartWindow;
 
     public UserInterface(ShopDbContext dbContext)
     {
@@ -26,12 +30,15 @@ internal class UserInterface
         _adminMenu = new("Administration", 0, 5, GetMenuItems<Menues.Admin>());
         _manageProductsMenu = new("Hantera produkter", 0, 5, GetMenuItems<Menues.ManageProducts>());
         _categoryMenu = new("Kategorier", 0, 5, GetCategories());
+        _addProductsToCartMenu = new("Lägg i varukorg", 150, 0, GetMenuItems<Menues.AddProductsToCart>());
+        _cartWindow = new("Kundkorg", 0, 25, new List<string> { "Tom korg" });
 
     }
     public void Start()
     {
         _welcomeWindow.Draw();
         _mainMenu.Draw();
+        _cartWindow.Draw();
         SelectMainMenuItem();
 
     }
@@ -70,7 +77,7 @@ internal class UserInterface
                     default:
                         continue;
                 }
-            } 
+            }
         }
     }
 
@@ -103,24 +110,31 @@ internal class UserInterface
 
     private void SelectCategory()
     {
-        var cursorPosition = Console.GetCursorPosition();
-
         // get allowed categories from TextRows
         List<int> listedCategories = new();
+
         foreach (var row in _categoryMenu.TextRows)
         {
             listedCategories.Add(int.Parse(row.Split('.')[0]));
         }
-        var userInput = Console.ReadLine();
-        if (int.TryParse(userInput, out var categoryId) && listedCategories.Contains(categoryId))
+        Console.Write("Välj kategori (enter): ");
+        var categoryId = 0;
+        var cursorPosition = Console.GetCursorPosition();
+        while (true)
         {
-            ShowProducts(categoryId);
+            var userInput = Console.ReadLine();
+            if (int.TryParse(userInput, out categoryId) && listedCategories.Contains(categoryId))
+            {
+                break;
+            }
+            else
+            {
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+                Console.Write(new string(' ', userInput.Length));
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+            }
         }
-        else
-        {
-            Console.SetCursorPosition(cursorPosition.Left,cursorPosition.Top);
-            Console.Write(new string(' ',userInput.Length));
-        }
+        ShowProducts(categoryId);
     }
 
     public List<String> GetCategories()
@@ -145,7 +159,78 @@ internal class UserInterface
         {
             results.Add($"{product.Id,-2}. {product.Name,-20} {product.Price,-5}");
         }
-        var productWindow = new Window(categoryName, 0, 10, results);
-        productWindow.Draw();
+        _productsInCategoryWindow = new Window(categoryName, 10, 5, results);
+        _productsInCategoryWindow.Draw();
+        SelectProduct();
+    }
+
+    private void SelectProduct()
+    {
+        List<int> listedProducts = new();
+        foreach (var row in _productsInCategoryWindow.TextRows)
+        {
+            listedProducts.Add(int.Parse(row.Split('.')[0]));
+        }
+        Console.Write("Välj produkt (enter): ");
+        var productId = 0;
+        var cursorPosition = Console.GetCursorPosition();
+        while (true)
+        {
+            var userInput = Console.ReadLine();
+            if (int.TryParse(userInput, out productId) && listedProducts.Contains(productId))
+            {
+                break;
+            }
+            else
+            {
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+                Console.Write(new string(' ', userInput.Length));
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+            }
+        }
+        ShowProduct(productId);
+    }
+
+    private void ShowProduct(int productId)
+    {
+        var product = _dbContext.Products.Find(productId);
+        if (product == null)
+        {
+            _productWindow = new Window("Hittar inte produkten", _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, [""]);
+            _productWindow.Draw();
+            return;
+        }
+        else
+        {
+            _productWindow = new Window(product.Name, _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, product.ToList());
+            _productWindow.Draw();
+            productSelection();
+        }
+    }
+
+    private void productSelection()
+    {
+        _addProductsToCartMenu.Draw();
+        while (true)
+        {
+            if (Enum.TryParse<Menues.AddProductsToCart>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            {
+                switch (choice)
+                {
+                    case Menues.AddProductsToCart.Tillbaka:
+                        Console.Clear();
+                        _welcomeWindow.Draw();
+                        _categoryMenu.Draw();
+                        _productsInCategoryWindow.Draw();
+                        SelectCategory();
+                        break;
+                    case Menues.AddProductsToCart.Lägg_i_kundkorg:
+                        _dbContext.ShoppingCarts.Add(new ShoppingCart());
+                        break;
+                    default:
+                        continue;
+                }
+            }
+        }
     }
 }
