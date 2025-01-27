@@ -65,6 +65,11 @@ public class Window
         Point lowerRightCorner = new Point(Left + width + 4, Top + TextRows.Count + 2);
         LowerRightCorner = lowerRightCorner;
     }
+    public void UpdateTextRows(List<string> newTextRows)
+    {
+        TextRows.Clear();
+        TextRows.AddRange(newTextRows);
+    }
 
     public class Coordinate
     {
