@@ -20,28 +20,29 @@ internal class UserInterface
     private Window _productWindow;
     private Window _addProductsToCartMenu;
     private Window _cartWindow;
+    private ShoppingCart _currentShoppingCart;
 
     public UserInterface(ShopDbContext dbContext)
     {
         _dbContext = dbContext;
+        _currentShoppingCart = GetOrCreateShoppingCart();
         _welcomeWindow = new Window("En Bra Affär", 0, 0, new List<string> { "Välkommen till vår butik!", "På en bra affär gör du en bra affär!" });
         _mainMenu = new("Huvudmeny", 0, 5, GetMenuItems<Menues.Main>());
         _shopMenu = new("Handla", 0, 5, GetMenuItems<Menues.Shop>());
         _adminMenu = new("Administration", 0, 5, GetMenuItems<Menues.Admin>());
         _manageProductsMenu = new("Hantera produkter", 0, 5, GetMenuItems<Menues.ManageProducts>());
-        _categoryMenu = new("Kategorier", 0, 5, GetCategories());
         _addProductsToCartMenu = new("Lägg i varukorg", 150, 0, GetMenuItems<Menues.AddProductsToCart>());
         _cartWindow = new("Kundkorg", 0, 25, new List<string> { "Tom korg" });
-
     }
+
     public void Start()
     {
         _welcomeWindow.Draw();
         _mainMenu.Draw();
         _cartWindow.Draw();
         SelectMainMenuItem();
-
     }
+
     public List<string> GetMenuItems<TEnum>() where TEnum : Enum
     {
         var results = new List<string>();
@@ -70,9 +71,11 @@ internal class UserInterface
                         Console.Clear();
                         _welcomeWindow.Draw();
                         _shopMenu.Draw();
+                        _cartWindow.Draw();
                         SelectShopMenuItem();
                         break;
                     case Menues.Main.Se_kundkorg:
+                        DisplayShoppingCart();
                         break;
                     default:
                         continue;
@@ -97,6 +100,7 @@ internal class UserInterface
                         Console.Clear();
                         _welcomeWindow.Draw();
                         _categoryMenu.Draw();
+                        _cartWindow.Draw();
                         SelectCategory();
                         break;
                     case Menues.Shop.Sök:
@@ -151,8 +155,8 @@ internal class UserInterface
     public void ShowProducts(int categoryId)
     {
         var products = _dbContext.Products.Include(p => p.ProductCategories)
-                                          .ToList()
-                                          .Where(p => p.ProductCategories.Any(pc => pc.Id == categoryId));
+                                          .Where(p => p.ProductCategories.Any(pc => pc.Id == categoryId))
+                                          .ToList();
         var categoryName = _dbContext.ProductCategories.Where(pc => pc.Id == categoryId).Select(pc => pc.Name).FirstOrDefault();
         var results = new List<string>();
         foreach (var product in products)
@@ -196,7 +200,7 @@ internal class UserInterface
         var product = _dbContext.Products.Find(productId);
         if (product == null)
         {
-            _productWindow = new Window("Hittar inte produkten", _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, [""]);
+            _productWindow = new Window("Hittar inte produkten", _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, new List<string> { "" });
             _productWindow.Draw();
             return;
         }
@@ -204,11 +208,11 @@ internal class UserInterface
         {
             _productWindow = new Window(product.Name, _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, product.ToList());
             _productWindow.Draw();
-            productSelection();
+            ProductSelection(productId);
         }
     }
 
-    private void productSelection()
+    private void ProductSelection(int productId)
     {
         _addProductsToCartMenu.Draw();
         while (true)
@@ -225,12 +229,67 @@ internal class UserInterface
                         SelectCategory();
                         break;
                     case Menues.AddProductsToCart.Lägg_i_kundkorg:
-                        _dbContext.ShoppingCarts.Add(new ShoppingCart());
+                        AddProductToCart(productId);
+
                         break;
                     default:
                         continue;
                 }
             }
         }
+    }
+
+    private void AddProductToCart(int productId)
+    {
+        var product = _dbContext.Products.Find(productId);
+        if (product == null)
+        {
+            Console.WriteLine("Produkten kunde inte hittas.");
+            return;
+        }
+
+        _currentShoppingCart.Products.Add(product);
+        _dbContext.SaveChanges();
+        Console.WriteLine("Produkten har lagts till i kundkorgen.");
+    }
+
+    private ShoppingCart GetOrCreateShoppingCart()
+    {
+        var shoppingCart = _dbContext.ShoppingCarts.FirstOrDefault(cart => cart.CustomerId == null);
+        if (shoppingCart == null)
+        {
+            shoppingCart = new ShoppingCart();
+            _dbContext.ShoppingCarts.Add(shoppingCart);
+            _dbContext.SaveChanges();
+        }
+        return shoppingCart;
+    }
+
+    private void DisplayShoppingCart()
+    {
+        var cartContents = _currentShoppingCart.ToList();
+        _shoppingCartWindow = new Window("Kundkorg", 0, 30, cartContents);
+        _shoppingCartWindow.Draw();
+    }
+
+    public void CreateCustomerAndAssociateCart(string firstName, string lastName, string email, string address, string city, string zipCode, int countryId, string? phoneNumber = null)
+    {
+        var customer = new Customer
+        {
+            FirstName = firstName,
+            LastName = lastName,
+            Email = email,
+            Address = address,
+            City = city,
+            ZipCode = zipCode,
+            CountryId = countryId,
+            PhoneNumber = phoneNumber
+        };
+
+        _dbContext.Customers.Add(customer);
+        _dbContext.SaveChanges();
+
+        _currentShoppingCart.CustomerId = customer.Id;
+        _dbContext.SaveChanges();
     }
 }
