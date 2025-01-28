@@ -9,27 +9,28 @@ public class Window
     public int Top { get; }
     public List<string> TextRows { get; }
     public Point LowerRightCorner { get; private set; }
+
     public Window(string header, int left, int top, List<string> textRows)
     {
-        Header = header;
+        Header = header ?? string.Empty;
         Left = left;
         Top = top;
-        TextRows = textRows;
+        TextRows = textRows ?? new List<string>();
     }
 
     public void Draw()
     {
-        var width = TextRows.OrderByDescending(s => s.Length).FirstOrDefault().Length;
+        var width = TextRows.OrderByDescending(s => s.Length).FirstOrDefault()?.Length ?? 0;
 
         // Kolla om Header är längre än det längsta ordet i listan
         if (width < Header.Length + 4)
         {
             width = Header.Length + 4;
-        };
+        }
 
         // Rita Header
         Console.SetCursorPosition(Left, Top);
-        if (Header != "")
+        if (!string.IsNullOrEmpty(Header))
         {
             Console.Write('┌' + " ");
             Console.ForegroundColor = ConsoleColor.DarkGray;
@@ -53,7 +54,6 @@ public class Window
         Console.SetCursorPosition(Left, Top + TextRows.Count + 1);
         Console.Write('└' + new string('─', width + 2) + '┘');
 
-
         // Kolla vilket som är den nedersta posotion, i alla fönster, som ritats ut
         if (Lowest.LowestPosition < Top + TextRows.Count + 2)
         {
@@ -65,6 +65,7 @@ public class Window
         Point lowerRightCorner = new Point(Left + width + 4, Top + TextRows.Count + 2);
         LowerRightCorner = lowerRightCorner;
     }
+
     public void UpdateTextRows(List<string> newTextRows)
     {
         TextRows.Clear();

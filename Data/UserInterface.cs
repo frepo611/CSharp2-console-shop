@@ -6,33 +6,31 @@ namespace consoleshoppen.Data;
 
 internal class UserInterface
 {
-    private ShopDbContext _dbContext;
-    private Window _welcomeWindow;
-    private Window _mainMenu;
-    private Window _shopMenu;
-    private Window _adminMenu;
-    private Window _manageProductsMenu;
-    private Window _categoryMenu;
+    private readonly ShopDbContext _dbContext;
+    private readonly Window _welcomeWindow;
+    private readonly Window _mainMenu;
+    private readonly Window _shopMenu;
+    private readonly Window _adminMenu;
+    private readonly Window _manageProductsMenu;
+    private readonly Window _categoryMenu;
     private Window _productsInCategoryWindow;
-    private Window _shoppingCartWindow;
-    private Window _checkoutWindow;
-    private Window _addToCartMenu;
+    private readonly Window _shoppingCartWindow;
+    private readonly Window _addProductsToCartMenu;
     private Window _productWindow;
-    private Window _addProductsToCartMenu;
-    private ShoppingCart _currentShoppingCart;
+    private readonly ShoppingCart _currentShoppingCart;
 
     public UserInterface(ShopDbContext dbContext)
     {
         _dbContext = dbContext;
         _currentShoppingCart = GetOrCreateShoppingCart();
         _welcomeWindow = new Window("En Bra Affär", 0, 0, new List<string> { "Välkommen till vår butik!", "På en bra affär gör du en bra affär!" });
-        _mainMenu = new("Huvudmeny", 0, 5, GetMenuItems<Menues.Main>());
-        _shopMenu = new("Handla", 0, 5, GetMenuItems<Menues.Shop>());
-        _adminMenu = new("Administration", 0, 5, GetMenuItems<Menues.Admin>());
-        _manageProductsMenu = new("Hantera produkter", 0, 5, GetMenuItems<Menues.ManageProducts>());
-        _categoryMenu = new("Kategorier", 0, 5, GetCategories());
-        _addProductsToCartMenu = new("Lägg i varukorg", 150, 0, GetMenuItems<Menues.AddProductsToCart>());
-        _shoppingCartWindow = new("Kundkorg", 0, 25, _currentShoppingCart.ToList());
+        _mainMenu = new Window("Huvudmeny", 0, 5, GetMenuItems<Menues.Main>());
+        _shopMenu = new Window("Handla", 0, 5, GetMenuItems<Menues.Shop>());
+        _adminMenu = new Window("Administration", 0, 5, GetMenuItems<Menues.Admin>());
+        _manageProductsMenu = new Window("Hantera produkter", 0, 5, GetMenuItems<Menues.ManageProducts>());
+        _categoryMenu = new Window("Kategorier", 0, 5, GetCategories());
+        _addProductsToCartMenu = new Window("Lägg i varukorg", 150, 0, GetMenuItems<Menues.AddProductsToCart>());
+        _shoppingCartWindow = new Window("Kundkorg", 0, 25, _currentShoppingCart.ToList());
     }
 
     public void Start()
@@ -43,7 +41,7 @@ internal class UserInterface
         SelectMainMenuItem();
     }
 
-    public List<string> GetMenuItems<TEnum>() where TEnum : Enum
+    private List<string> GetMenuItems<TEnum>() where TEnum : Enum
     {
         var results = new List<string>();
         foreach (var menuItem in Enum.GetValues(typeof(TEnum)))
@@ -53,7 +51,7 @@ internal class UserInterface
         return results;
     }
 
-    public void SelectMainMenuItem()
+    private void SelectMainMenuItem()
     {
         while (true)
         {
@@ -65,7 +63,8 @@ internal class UserInterface
                         Environment.Exit(0);
                         break;
                     case Menues.Main.Logga_in:
-                        Window loginWindow = new("Logga in", 1, 1, new List<string> { "Användarnamn:", "Lösenord:" });
+                        var loginWindow = new Window("Logga in", 1, 1, new List<string> { "Användarnamn:", "Lösenord:" });
+                        loginWindow.Draw();
                         break;
                     case Menues.Main.Handla:
                         Console.Clear();
@@ -78,8 +77,6 @@ internal class UserInterface
                         _shoppingCartWindow.UpdateTextRows(_currentShoppingCart.ToList());
                         _shoppingCartWindow.Draw();
                         break;
-                    default:
-                        continue;
                 }
             }
         }
@@ -104,10 +101,6 @@ internal class UserInterface
                         _shoppingCartWindow.Draw();
                         SelectCategory();
                         break;
-                    case Menues.Shop.Sök:
-                        break;
-                    default:
-                        continue;
                 }
             }
         }
@@ -115,7 +108,6 @@ internal class UserInterface
 
     private void SelectCategory()
     {
-        // get allowed categories from TextRows
         List<int> listedCategories = new();
 
         foreach (var row in _categoryMenu.TextRows)
@@ -123,40 +115,50 @@ internal class UserInterface
             listedCategories.Add(int.Parse(row.Split('.')[0]));
         }
         Console.Write("Välj kategori (enter): ");
-        var categoryId = 0;
         var cursorPosition = Console.GetCursorPosition();
         while (true)
         {
+            int categoryId;
             var userInput = Console.ReadLine();
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
             Console.Write(new string(' ', userInput.Length));
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
-            if (int.TryParse(userInput, out categoryId) && listedCategories.Contains(categoryId))
+            if (userInput == "0")
             {
+                Console.Clear();
+                _welcomeWindow.Draw();
+                _shopMenu.Draw();
+                _shoppingCartWindow.Draw();
+                SelectShopMenuItem();
+                break;
+            }
+            else if (int.TryParse(userInput, out categoryId) && listedCategories.Contains(categoryId))
+            {
+                ShowProducts(categoryId);
                 break;
             }
         }
-        ShowProducts(categoryId);
     }
 
-    public List<String> GetCategories()
+    private List<string> GetCategories()
     {
         var categories = _dbContext.ProductCategories.ToList();
         var results = new List<string>();
+        results.Add("0. Tillbaka");
         foreach (var category in categories)
         {
             results.Add($"{category.Id}. {category.Name}");
         }
         return results;
     }
-
-    public void ShowProducts(int categoryId)
+    private void ShowProducts(int categoryId)
     {
         var products = _dbContext.Products.Include(p => p.ProductCategories)
                                           .Where(p => p.ProductCategories.Any(pc => pc.Id == categoryId))
                                           .ToList();
         var categoryName = _dbContext.ProductCategories.Where(pc => pc.Id == categoryId).Select(pc => pc.Name).FirstOrDefault();
         var results = new List<string>();
+        results.Add("0. Tillbaka");
         foreach (var product in products)
         {
             results.Add($"{product.Id,-2}. {product.Name,-20} {product.Price,-5}");
@@ -174,20 +176,29 @@ internal class UserInterface
             listedProducts.Add(int.Parse(row.Split('.')[0]));
         }
         Console.Write("Välj produkt (enter): ");
-        var productId = 0;
         var cursorPosition = Console.GetCursorPosition();
         while (true)
         {
             var userInput = Console.ReadLine();
-            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top); // clear user input
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
             Console.Write(new string(' ', Console.BufferWidth));
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
-            if (int.TryParse(userInput, out productId) && listedProducts.Contains(productId))
+
+            if (userInput == "0")
             {
+                Console.Clear();
+                _welcomeWindow.Draw();
+                _shoppingCartWindow.Draw();
+                _categoryMenu.Draw();
+                SelectCategory();
+                break;
+            }
+            else if (int.TryParse(userInput, out var productId) && listedProducts.Contains(productId))
+            {
+                ShowProduct(productId);
                 break;
             }
         }
-        ShowProduct(productId);
     }
 
     private void ShowProduct(int productId)
@@ -197,7 +208,6 @@ internal class UserInterface
         {
             _productWindow = new Window("Hittar inte produkten", _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, new List<string> { "" });
             _productWindow.Draw();
-            return;
         }
         else
         {
@@ -221,14 +231,12 @@ internal class UserInterface
                         _welcomeWindow.Draw();
                         _categoryMenu.Draw();
                         _productsInCategoryWindow.Draw();
-                        SelectCategory();
+                        _shoppingCartWindow.Draw();
+                        SelectProduct();
                         break;
                     case Menues.AddProductsToCart.Lägg_i_kundkorg:
                         AddProductToCart(productId);
-
                         break;
-                    default:
-                        continue;
                 }
             }
         }
