@@ -12,9 +12,11 @@
             var result = new List<string>();
             foreach (var product in Products)
             {
-                result.Add(product.ToString());
+                result.Add($"{product.Name,-20} {product.Price:c}");
             }
             if (result.Count == 0) result.Add("Tom varukorg");
+            result.Add(new string('-', 26));
+            result.Add($"{"Totalt:",-20} {Products.Sum(p => p.Price):c}");
             return result;
         }
     }

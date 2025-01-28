@@ -29,7 +29,7 @@ internal class UserInterface
         _adminMenu = new Window("Administration", 0, 5, GetMenuItems<Menues.Admin>());
         _manageProductsMenu = new Window("Hantera produkter", 0, 5, GetMenuItems<Menues.ManageProducts>());
         _categoryMenu = new Window("Kategorier", 0, 5, GetCategories());
-        _addProductsToCartMenu = new Window("Lägg i varukorg", 150, 0, GetMenuItems<Menues.AddProductsToCart>());
+        _addProductsToCartMenu = new Window("Lägg i varukorg", 100, 0, GetMenuItems<Menues.AddProductsToCart>());
         _shoppingCartWindow = new Window("Kundkorg", 0, 25, _currentShoppingCart.ToList());
     }
 
@@ -39,16 +39,6 @@ internal class UserInterface
         _mainMenu.Draw();
         _shoppingCartWindow.Draw();
         SelectMainMenuItem();
-    }
-
-    private List<string> GetMenuItems<TEnum>() where TEnum : Enum
-    {
-        var results = new List<string>();
-        foreach (var menuItem in Enum.GetValues(typeof(TEnum)))
-        {
-            results.Add($"{(int)menuItem}. {menuItem.ToString()?.Replace('_', ' ')}");
-        }
-        return results;
     }
 
     private void SelectMainMenuItem()
@@ -139,18 +129,7 @@ internal class UserInterface
             }
         }
     }
-
-    private List<string> GetCategories()
-    {
-        var categories = _dbContext.ProductCategories.ToList();
-        var results = new List<string>();
-        results.Add("0. Tillbaka");
-        foreach (var category in categories)
-        {
-            results.Add($"{category.Id}. {category.Name}");
-        }
-        return results;
-    }
+  
     private void ShowProducts(int categoryId)
     {
         var products = _dbContext.Products.Include(p => p.ProductCategories)
@@ -167,7 +146,6 @@ internal class UserInterface
         _productsInCategoryWindow.Draw();
         SelectProduct();
     }
-
     private void SelectProduct()
     {
         List<int> listedProducts = new();
@@ -294,5 +272,25 @@ internal class UserInterface
 
         _currentShoppingCart.CustomerId = customer.Id;
         _dbContext.SaveChanges();
+    }
+    private List<string> GetCategories()
+    {
+        var categories = _dbContext.ProductCategories.ToList();
+        var results = new List<string>();
+        results.Add("0. Tillbaka");
+        foreach (var category in categories)
+        {
+            results.Add($"{category.Id}. {category.Name}");
+        }
+        return results;
+    }
+    private List<string> GetMenuItems<TEnum>() where TEnum : Enum
+    {
+        var results = new List<string>();
+        foreach (var menuItem in Enum.GetValues(typeof(TEnum)))
+        {
+            results.Add($"{(int)menuItem}. {menuItem.ToString()?.Replace('_', ' ')}");
+        }
+        return results;
     }
 }
