@@ -14,11 +14,11 @@ internal class Program
         //Console.SetWindowSize(200, 60);
 
         var configuration = new ConfigurationBuilder()
-            .SetBasePath(Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"..\..\..")))
+            .SetBasePath(Path.GetFullPath(Directory.GetCurrentDirectory()))
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .Build();
 
-        var connectionString = configuration.GetConnectionString("DefaultConnection");
+        var connectionString = configuration.GetConnectionString("SQLConnection");
 
         var optionsBuilder = new DbContextOptionsBuilder<ShopDbContext>();
         optionsBuilder.UseSqlServer(connectionString);
