@@ -13,13 +13,13 @@ namespace consoleshoppen.Models
         public int SupplierId { get; set; }
         // Navigation properties
         public ICollection<ProductCategory> ProductCategories { get; set; } = new List<ProductCategory>();
-        public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
+        //public ICollection<ProductVariant> ProductVariants { get; set; } = new List<ProductVariant>();
 
         // Method to update stock based on ProductVariants
-        public void UpdateStock()
-        {
-            Stock = ProductVariants?.Sum(pv => pv.Quantity) ?? 0;
-        }
+        //public void UpdateStock()
+        //{
+        //    Stock = ProductVariants?.Sum(pv => pv.Quantity) ?? 0;
+        //}
         public override string ToString()
         {
             return $"{Name} {Price}";

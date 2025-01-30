@@ -18,11 +18,12 @@ internal class UserInterface
     private readonly Window _addProductsToCartMenu;
     private Window _productWindow;
     private readonly ShoppingCart _currentShoppingCart;
+    private readonly Window _manageShoppingCartMenu;
 
     public UserInterface(ShopDbContext dbContext)
     {
         _dbContext = dbContext;
-        _currentShoppingCart = GetOrCreateShoppingCart();
+        _currentShoppingCart = new ShoppingCart();
         _welcomeWindow = new Window("En Bra Affär", 0, 0, new List<string> { "Välkommen till vår butik!", "På en bra affär gör du en bra affär!" });
         _mainMenu = new Window("Huvudmeny", 0, 5, GetMenuItems<Menues.Main>());
         _shopMenu = new Window("Handla", 0, 5, GetMenuItems<Menues.Shop>());
@@ -31,12 +32,15 @@ internal class UserInterface
         _categoryMenu = new Window("Kategorier", 0, 5, GetCategories());
         _addProductsToCartMenu = new Window("Lägg i varukorg", 100, 0, GetMenuItems<Menues.AddProductsToCart>());
         _shoppingCartWindow = new Window("Kundkorg", 0, 25, _currentShoppingCart.ToList());
+        _manageShoppingCartMenu = new Window("Hantera kundkorg", 50, 25, GetMenuItems<Menues.ShoppingCart>());
+
     }
 
     public void Start()
     {
         _welcomeWindow.Draw();
         _mainMenu.Draw();
+        _shoppingCartWindow.UpdateTextRows(_currentShoppingCart.ToList());
         _shoppingCartWindow.Draw();
         SelectMainMenuItem();
     }
@@ -63,13 +67,107 @@ internal class UserInterface
                         _shoppingCartWindow.Draw();
                         SelectShopMenuItem();
                         break;
-                    case Menues.Main.Se_kundkorg:
-                        _shoppingCartWindow.UpdateTextRows(_currentShoppingCart.ToList());
-                        _shoppingCartWindow.Draw();
+                    case Menues.Main.Hantera_kundkorg:
+                        _manageShoppingCartMenu.Draw();
+                        SelectManageShoppingCartMenuItem();
                         break;
                 }
             }
         }
+    }
+
+    private void SelectManageShoppingCartMenuItem()
+    {
+        while (true)
+        {
+            if (Enum.TryParse<Menues.ShoppingCart>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            {
+                switch (choice)
+                {
+                    case Menues.ShoppingCart.Tillbaka:
+                        Console.Clear();
+                        Start();
+                        break;
+                    case Menues.ShoppingCart.Ändra_produkt:
+                        SelectProductInCart();
+                        break;
+                    case Menues.ShoppingCart.Till_kassan:
+                        break;
+                }
+            }
+        }
+    }
+
+    private void SelectProductInCart()
+    {
+        int productId;
+        Console.Write("Välj produkt (enter): ");
+        var cursorPosition = Console.GetCursorPosition();
+        while (true)
+        {
+            var userInput = Console.ReadLine();
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+            Console.Write(new string(' ', Console.BufferWidth));
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+
+            if (userInput == "0")
+            {
+                Console.Clear();
+                _welcomeWindow.Draw();
+                _shoppingCartWindow.Draw();
+                _categoryMenu.Draw();
+                SelectCategory();
+                break;
+            }
+            else if (int.TryParse(userInput, out productId) && _currentShoppingCart.Products.Select(p => p.Id).Contains(productId))
+            {
+                EditProductInCart(productId);
+                break;
+            }
+        }
+    }
+
+    private void EditProductInCart(int productId)
+    {
+        var cursorPosition = Console.GetCursorPosition();
+        Console.SetCursorPosition(0, cursorPosition.Top);
+        Console.Write(new string(' ', Console.BufferWidth));
+        Console.SetCursorPosition(0, cursorPosition.Top);
+
+        Product? product = _currentShoppingCart.Products.Where(p => p.Id == productId).First();
+        int productQuantity = _currentShoppingCart.Products.Where(p => p.Id == productId).Count();
+        Console.Write($"Det ligger {productQuantity} stycken {product.Name} i kundkorgen. Ange nytt antal: ");
+        int newProductQuantity;
+        while (true)
+        {
+            var userInput = Console.ReadLine();
+            if (int.TryParse(userInput, out newProductQuantity) && newProductQuantity >= 0)
+            {
+                break;
+            }
+        }
+        // remove product until the amount is correct
+        if (newProductQuantity == 0)
+        {
+            _currentShoppingCart.Products.RemoveAll(p => p.Id == productId);
+        }
+        else if (newProductQuantity < productQuantity)
+        {
+            int removeCount = productQuantity - newProductQuantity;
+            for (int i = 0; i < removeCount; i++)
+            {
+                _currentShoppingCart.Products.Remove(_currentShoppingCart.Products.First(p => p.Id == productId));
+            }
+        }
+        else if (newProductQuantity > productQuantity)
+        {
+            int addCount = newProductQuantity - productQuantity;
+            for (int i = 0; i < addCount; i++)
+            {
+                _currentShoppingCart.Products.Add(product);
+            }
+        }
+        UpdateShoppingCart();
     }
 
     private void SelectShopMenuItem()
@@ -90,6 +188,10 @@ internal class UserInterface
                         _categoryMenu.Draw();
                         _shoppingCartWindow.Draw();
                         SelectCategory();
+                        break;
+                    case Menues.Shop.Hantera_kundkorg:
+                        _manageShoppingCartMenu.Draw();
+                        SelectManageShoppingCartMenuItem();
                         break;
                 }
             }
@@ -129,13 +231,13 @@ internal class UserInterface
             }
         }
     }
-  
+
     private void ShowProducts(int categoryId)
     {
-        var products = _dbContext.Products.Include(p => p.ProductCategories)
+        List<Product> products = _dbContext.Products.Include(p => p.ProductCategories)
                                           .Where(p => p.ProductCategories.Any(pc => pc.Id == categoryId))
                                           .ToList();
-        var categoryName = _dbContext.ProductCategories.Where(pc => pc.Id == categoryId).Select(pc => pc.Name).FirstOrDefault();
+        string? categoryName = _dbContext.ProductCategories.Where(pc => pc.Id == categoryId).Select(pc => pc.Name).FirstOrDefault();
         var results = new List<string>();
         results.Add("0. Tillbaka");
         foreach (var product in products)
@@ -208,8 +310,8 @@ internal class UserInterface
                         Console.Clear();
                         _welcomeWindow.Draw();
                         _categoryMenu.Draw();
-                        _productsInCategoryWindow.Draw();
                         _shoppingCartWindow.Draw();
+                        _productsInCategoryWindow.Draw();
                         SelectProduct();
                         break;
                     case Menues.AddProductsToCart.Lägg_i_kundkorg:
@@ -228,23 +330,11 @@ internal class UserInterface
             Console.WriteLine("Produkten kunde inte hittas.");
             return;
         }
-
         _currentShoppingCart.Products.Add(product);
         _dbContext.SaveChanges();
         UpdateShoppingCart();
         Console.WriteLine("Produkten har lagts till i kundkorgen.");
-    }
 
-    private ShoppingCart GetOrCreateShoppingCart()
-    {
-        var shoppingCart = _dbContext.ShoppingCarts.FirstOrDefault(cart => cart.CustomerId == null);
-        if (shoppingCart == null)
-        {
-            shoppingCart = new ShoppingCart();
-            _dbContext.ShoppingCarts.Add(shoppingCart);
-            _dbContext.SaveChanges();
-        }
-        return shoppingCart;
     }
 
     private void UpdateShoppingCart()

@@ -7,9 +7,9 @@ internal class Menues
         Stäng_butiken = 0,
         Logga_in,
         Handla,
-        Se_kundkorg,
+        Hantera_kundkorg,
+        Till_kassan,
         Shipping,
-        Payment,
         Admin,
     }
 
@@ -18,8 +18,7 @@ internal class Menues
         Tillbaka = 0,
         Se_kategorier,
         Sök,
-        ViewProduct,
-        AddToCart,
+        Hantera_kundkorg,
     }
 
     public enum Admin
@@ -58,6 +57,12 @@ internal class Menues
     {
         Tillbaka = 0,
         Lägg_i_kundkorg,
+    }
+    public enum ShoppingCart
+    {
+        Tillbaka = 0,
+        Ändra_produkt,
+        Till_kassan,
     }
 }
 
