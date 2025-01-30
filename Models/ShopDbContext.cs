@@ -3,6 +3,9 @@ namespace consoleshoppen.Models;
 
 public class ShopDbContext : DbContext
 {
+    public ShopDbContext(DbContextOptions<ShopDbContext> options) : base(options)
+    {
+    }
     public DbSet<Country> Countries { get; set; }
     public DbSet<Customer> Customers { get; set; }
     public DbSet<Order> Orders { get; set; }
@@ -18,9 +21,9 @@ public class ShopDbContext : DbContext
     public DbSet<UserAccount> UserAccounts { get; set; }
 
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        var connectionString = "Server=.\\SQLExpress;Database=Webshop;Trusted_Connection=True;TrustServerCertificate=true";
-        optionsBuilder.UseSqlServer(connectionString);
-    }
+    //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    //{
+    //    var connectionString = ;
+    //    optionsBuilder.UseSqlServer(connectionString);
+    //}
 }
