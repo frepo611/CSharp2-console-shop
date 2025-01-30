@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using consoleshoppen.Models;
 
@@ -11,9 +12,11 @@ using consoleshoppen.Models;
 namespace consoleshoppen.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
-    partial class ShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250125152348_RemoveProductVariant")]
+    partial class RemoveProductVariant
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -35,6 +38,23 @@ namespace consoleshoppen.Migrations
                     b.HasIndex("ProductsId");
 
                     b.ToTable("ProductProductCategory");
+                });
+
+            modelBuilder.Entity("consoleshoppen.Models.Color", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Color");
                 });
 
             modelBuilder.Entity("consoleshoppen.Models.Country", b =>
@@ -251,6 +271,37 @@ namespace consoleshoppen.Migrations
                     b.ToTable("ProductCategories");
                 });
 
+            modelBuilder.Entity("consoleshoppen.Models.ProductVariant", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ColorId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Quantity")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SizeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ColorId");
+
+                    b.HasIndex("ProductId");
+
+                    b.HasIndex("SizeId");
+
+                    b.ToTable("ProductVariant");
+                });
+
             modelBuilder.Entity("consoleshoppen.Models.ShippingMethod", b =>
                 {
                     b.Property<int>("Id")
@@ -279,12 +330,10 @@ namespace consoleshoppen.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("CustomerId")
+                    b.Property<int>("CustomerId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CustomerId");
 
                     b.ToTable("ShoppingCarts");
                 });
@@ -309,6 +358,23 @@ namespace consoleshoppen.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("ShoppingCartItems");
+                });
+
+            modelBuilder.Entity("consoleshoppen.Models.Size", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Size");
                 });
 
             modelBuilder.Entity("consoleshoppen.Models.Supplier", b =>
@@ -401,18 +467,41 @@ namespace consoleshoppen.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("consoleshoppen.Models.ShoppingCart", b =>
+            modelBuilder.Entity("consoleshoppen.Models.ProductVariant", b =>
                 {
-                    b.HasOne("consoleshoppen.Models.Customer", "Customer")
+                    b.HasOne("consoleshoppen.Models.Color", "Color")
                         .WithMany()
-                        .HasForeignKey("CustomerId");
+                        .HasForeignKey("ColorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.Navigation("Customer");
+                    b.HasOne("consoleshoppen.Models.Product", "Product")
+                        .WithMany("ProductVariants")
+                        .HasForeignKey("ProductId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("consoleshoppen.Models.Size", "Size")
+                        .WithMany()
+                        .HasForeignKey("SizeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Color");
+
+                    b.Navigation("Product");
+
+                    b.Navigation("Size");
                 });
 
             modelBuilder.Entity("consoleshoppen.Models.Order", b =>
                 {
                     b.Navigation("OrderDetails");
+                });
+
+            modelBuilder.Entity("consoleshoppen.Models.Product", b =>
+                {
+                    b.Navigation("ProductVariants");
                 });
 
             modelBuilder.Entity("consoleshoppen.Models.ShoppingCart", b =>

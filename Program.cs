@@ -11,8 +11,14 @@ internal class Program
         //Console.SetWindowSize(200, 60);
 
         using var dbContext = new ShopDbContext();
-        var ui = new UserInterface(dbContext);
-        ui.Start();
+        //DependentDataSeeder dependentSeeder = new(dbContext);
+        //dependentSeeder.Seed();
+        ProductDataSeeder productSeeder = new(dbContext);
+        productSeeder.Seed();
+
+
+        //var ui = new UserInterface(dbContext);
+        //ui.Start();
 
     }
     
