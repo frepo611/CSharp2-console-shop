@@ -7,17 +7,17 @@ namespace consoleshoppen.Data;
 internal class UserInterface
 {
     private readonly ShopDbContext _dbContext;
-    private readonly Window _welcomeWindow;
+    private readonly Window _welcomeWindow; 
     private readonly Window _mainMenu;
     private readonly Window _shopMenu;
     private readonly Window _adminMenu;
     private readonly Window _manageProductsMenu;
-    private readonly Window _categoryMenu;
+    private Window? _categoryMenu;
     private Window _productsInCategoryWindow;
     private readonly Window _shoppingCartWindow;
     private readonly Window _addProductsToCartMenu;
     private Window _productWindow;
-    private ShoppingCart _currentShoppingCart;
+    private readonly ShoppingCart _currentShoppingCart;
     private readonly Window _manageShoppingCartMenu;
     private readonly Window _firstMenu;
     private Customer _currentCustomer;
@@ -25,114 +25,32 @@ internal class UserInterface
     public UserInterface(ShopDbContext dbContext)
     {
         _dbContext = dbContext;
+        _currentShoppingCart = new ShoppingCart();
         _welcomeWindow = new Window("En Bra Affär", 0, 0, new List<string> { "Välkommen till vår butik!", "På en bra affär gör du en bra affär!" });
         _mainMenu = new Window("Huvudmeny", 0, 5, GetMenuItems<Menues.Main>());
         _shopMenu = new Window("Handla", 0, 5, GetMenuItems<Menues.Shop>());
         _adminMenu = new Window("Administration", 0, 5, GetMenuItems<Menues.Admin>());
         _manageProductsMenu = new Window("Hantera produkter", 0, 5, GetMenuItems<Menues.ManageProducts>());
-        _categoryMenu = new Window("Kategorier", 0, 5, GetCategories());
         _addProductsToCartMenu = new Window("Lägg i varukorg", 100, 0, GetMenuItems<Menues.AddProductsToCart>());
+        _shoppingCartWindow = new Window("Kundkorg", 0, 25, _currentShoppingCart.ToList());
         _manageShoppingCartMenu = new Window("Hantera kundkorg", 50, 25, GetMenuItems<Menues.ShoppingCart>());
         _firstMenu = new Window("Välkommen", 0, 5, GetMenuItems<Menues.First>());
     }
 
-    public void Start()
+    public async Task StartAsync()
     {
-        Console.Clear();
+        if (_categoryMenu == null)
+        {
+            _categoryMenu = new Window("Kategorier", 0, 5, await GetCategoriesAsync());
+        }
         _welcomeWindow.Draw();
-        _firstMenu.Draw();
-        SelectFirstMenuItem();
-    }
-    public void MainMenu()
-    {
         _mainMenu.Draw();
-        try
-        {
-            _currentShoppingCart.CustomerId = _currentCustomer.Id;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Något blev fel med kundkorgen. {(ex.InnerException == null ? string.Empty : ex.InnerException.Message)} Tryck en tangent för att fortsätta.");
-            Console.ReadKey();
-            _currentShoppingCart = new ShoppingCart();
-
-        }
         _shoppingCartWindow.UpdateTextRows(_currentShoppingCart.ToList());
         _shoppingCartWindow.Draw();
-        SelectMainMenuItem();
-    }
-    private void SelectFirstMenuItem()
-    {
-        while (true)
-        {
-            if (Enum.TryParse<Menues.First>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
-            {
-                switch (choice)
-                {
-                    case Menues.First.Stäng_butiken:
-                        Environment.Exit(0);
-                        break;
-                    case Menues.First.Skapa_nytt_konto:
-                        CreateAccount();
-                        break;
-                    case Menues.First.Logga_in:
-                        LogIn();
-                        break;
-                    case Menues.First.Växla_konto:
-                        //Login();
-                        break;
-                        break;
-                    case Menues.First.Till_butiken:
-                        MainMenu();
-                        break;
-                }
-            }
-        }
+        await SelectMainMenuItemAsync();
     }
 
-    private void LogIn()
-    {
-        Console.Write("Ange customer id: ");
-        int customerId = int.Parse(Console.ReadLine());
-        _currentCustomer = _dbContext.Customers.FirstOrDefault(customer => customer.Id == customerId);
-        if (_currentCustomer == null)
-        {
-            Console.WriteLine("Kunde inte hitta kund med det id:t.");
-            Console.ReadKey();
-
-            Start();
-        }
-    }
-
-    private void CreateAccount()
-    {
-        var countryWindow = new Window("Länder", 20, 0, GetCountryList());
-        Console.Clear();
-        _welcomeWindow.Draw();
-        Console.Write("Förnamn: ");
-        string firstName = Console.ReadLine();
-        Console.Write("Efternamn: ");
-        string lastName = Console.ReadLine();
-        Console.Write("E-post: ");
-        string email = Console.ReadLine();
-        Console.Write("Telefonnummer: ");
-        string phoneNumber = Console.ReadLine();
-        Console.Write("Adress: ");
-        string address = Console.ReadLine();
-        Console.Write("Postnummer: ");
-        string zipCode = Console.ReadLine();
-        Console.Write("Stad: ");
-        string city = Console.ReadLine();
-        Console.Write("Välj land: ");
-        countryWindow.Draw();
-        int countryId = int.Parse(Console.ReadLine());
-        var newCustomer = new Customer() { Address = address, City = city, Email = email, FirstName = firstName, LastName = lastName, ZipCode = zipCode, CountryId = countryId, PhoneNumber = phoneNumber };
-        _dbContext.Customers.Add(newCustomer);
-        _currentCustomer = newCustomer;
-        _dbContext.SaveChanges();
-    }
-
-    private void SelectMainMenuItem()
+    private async Task SelectMainMenuItemAsync()
     {
         while (true)
         {
@@ -148,18 +66,18 @@ internal class UserInterface
                         _welcomeWindow.Draw();
                         _shopMenu.Draw();
                         _shoppingCartWindow.Draw();
-                        SelectShopMenuItem();
+                        await SelectShopMenuItemAsync();
                         break;
                     case Menues.Main.Hantera_kundkorg:
                         _manageShoppingCartMenu.Draw();
-                        SelectManageShoppingCartMenuItem();
+                        await SelectManageShoppingCartMenuItemAsync();
                         break;
                 }
             }
         }
     }
 
-    private void SelectManageShoppingCartMenuItem()
+    private async Task SelectManageShoppingCartMenuItemAsync()
     {
         while (true)
         {
@@ -169,10 +87,10 @@ internal class UserInterface
                 {
                     case Menues.ShoppingCart.Tillbaka:
                         Console.Clear();
-                        Start();
+                        await StartAsync();
                         break;
                     case Menues.ShoppingCart.Ändra_produkt:
-                        SelectProductInCart();
+                        await SelectProductInCartAsync();
                         break;
                     case Menues.ShoppingCart.Till_kassan:
                         break;
@@ -181,7 +99,7 @@ internal class UserInterface
         }
     }
 
-    private void SelectProductInCart()
+    private async Task SelectProductInCartAsync()
     {
         int productId;
         Console.Write("Välj produkt (enter): ");
@@ -198,8 +116,8 @@ internal class UserInterface
                 Console.Clear();
                 _welcomeWindow.Draw();
                 _shoppingCartWindow.Draw();
-                _categoryMenu.Draw();
-                SelectCategory();
+                _categoryMenu!.Draw();
+                await SelectCategoryAsync();
                 break;
             }
             else if (int.TryParse(userInput, out productId) && _currentShoppingCart.Products.Select(p => p.Id).Contains(productId))
@@ -253,7 +171,7 @@ internal class UserInterface
         UpdateShoppingCart();
     }
 
-    private void SelectShopMenuItem()
+    private async Task SelectShopMenuItemAsync()
     {
         while (true)
         {
@@ -263,29 +181,29 @@ internal class UserInterface
                 {
                     case Menues.Shop.Tillbaka:
                         Console.Clear();
-                        Start();
+                        await StartAsync();
                         break;
                     case Menues.Shop.Se_kategorier:
                         Console.Clear();
                         _welcomeWindow.Draw();
-                        _categoryMenu.Draw();
+                        _categoryMenu!.Draw();
                         _shoppingCartWindow.Draw();
-                        SelectCategory();
+                        await SelectCategoryAsync();
                         break;
                     case Menues.Shop.Hantera_kundkorg:
                         _manageShoppingCartMenu.Draw();
-                        SelectManageShoppingCartMenuItem();
+                        await SelectManageShoppingCartMenuItemAsync();
                         break;
                 }
             }
         }
     }
 
-    private void SelectCategory()
+    private async Task SelectCategoryAsync()
     {
         List<int> listedCategories = new();
 
-        foreach (var row in _categoryMenu.TextRows)
+        foreach (var row in _categoryMenu!.TextRows)
         {
             listedCategories.Add(int.Parse(row.Split('.')[0]));
         }
@@ -304,34 +222,35 @@ internal class UserInterface
                 _welcomeWindow.Draw();
                 _shopMenu.Draw();
                 _shoppingCartWindow.Draw();
-                SelectShopMenuItem();
+                await SelectShopMenuItemAsync();
                 break;
             }
             else if (int.TryParse(userInput, out categoryId) && listedCategories.Contains(categoryId))
             {
-                ShowProducts(categoryId);
+                await ShowProductsAsync(categoryId);
                 break;
             }
         }
     }
 
-    private void ShowProducts(int categoryId)
+    private async Task ShowProductsAsync(int categoryId)
     {
-        List<Product> products = _dbContext.Products.Include(p => p.ProductCategories)
+        List<Product> products = await _dbContext.Products.Include(p => p.ProductCategories)
                                           .Where(p => p.ProductCategories.Any(pc => pc.Id == categoryId))
-                                          .ToList();
-        string? categoryName = _dbContext.ProductCategories.Where(pc => pc.Id == categoryId).Select(pc => pc.Name).FirstOrDefault();
+                                          .ToListAsync();
+        string? categoryName = await _dbContext.ProductCategories.Where(pc => pc.Id == categoryId).Select(pc => pc.Name).FirstOrDefaultAsync();
+        
         var results = new List<string>();
         results.Add("0. Tillbaka");
         foreach (var product in products)
         {
             results.Add($"{product.Id,-2}. {product.Name,-20} {product.Price,-5}");
         }
-        _productsInCategoryWindow = new Window(categoryName, 0, _categoryMenu.LowerRightCorner.Y, results);
+        _productsInCategoryWindow = new Window(categoryName, 0, _categoryMenu!.LowerRightCorner.Y, results);
         _productsInCategoryWindow.Draw();
-        SelectProduct();
+        await SelectProductAsync();
     }
-    private void SelectProduct()
+    private async Task SelectProductAsync()
     {
         List<int> listedProducts = new();
         foreach (var row in _productsInCategoryWindow.TextRows)
@@ -352,21 +271,21 @@ internal class UserInterface
                 Console.Clear();
                 _welcomeWindow.Draw();
                 _shoppingCartWindow.Draw();
-                _categoryMenu.Draw();
-                SelectCategory();
+                _categoryMenu!.Draw();
+                await SelectCategoryAsync();
                 break;
             }
             else if (int.TryParse(userInput, out var productId) && listedProducts.Contains(productId))
             {
-                ShowProduct(productId);
+                await ShowProductAsync(productId);
                 break;
             }
         }
     }
 
-    private void ShowProduct(int productId)
+    private async Task ShowProductAsync(int productId)
     {
-        var product = _dbContext.Products.Find(productId);
+        var product = await _dbContext.Products.FindAsync(productId);
         if (product == null)
         {
             _productWindow = new Window("Hittar inte produkten", _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, new List<string> { "" });
@@ -376,11 +295,11 @@ internal class UserInterface
         {
             _productWindow = new Window(product.Name, _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, product.ToList());
             _productWindow.Draw();
-            ProductSelection(productId);
+            await ProductSelectionAsync(productId);
         }
     }
 
-    private void ProductSelection(int productId)
+    private async Task ProductSelectionAsync(int productId)
     {
         _addProductsToCartMenu.Draw();
         while (true)
@@ -392,32 +311,31 @@ internal class UserInterface
                     case Menues.AddProductsToCart.Tillbaka:
                         Console.Clear();
                         _welcomeWindow.Draw();
-                        _categoryMenu.Draw();
+                        _categoryMenu!.Draw();
                         _shoppingCartWindow.Draw();
                         _productsInCategoryWindow.Draw();
-                        SelectProduct();
+                        await SelectProductAsync();
                         break;
                     case Menues.AddProductsToCart.Lägg_i_kundkorg:
-                        AddProductToCart(productId);
+                        await AddProductToCartAsync(productId);
                         break;
                 }
             }
         }
     }
 
-    private void AddProductToCart(int productId)
+    private async Task AddProductToCartAsync(int productId)
     {
-        var product = _dbContext.Products.Find(productId);
+        var product = await _dbContext.Products.FindAsync(productId);
         if (product == null)
         {
             Console.WriteLine("Produkten kunde inte hittas.");
             return;
         }
         _currentShoppingCart.Products.Add(product);
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
         UpdateShoppingCart();
         Console.WriteLine("Produkten har lagts till i kundkorgen.");
-
     }
 
     private void UpdateShoppingCart()
@@ -426,7 +344,7 @@ internal class UserInterface
         _shoppingCartWindow.Draw();
     }
 
-    public void CreateCustomerAndAssociateCart(string firstName, string lastName, string email, string address, string city, string zipCode, int countryId, string? phoneNumber = null)
+    public async Task CreateCustomerAndAssociateCartAsync(string firstName, string lastName, string email, string address, string city, string zipCode, int countryId, string? phoneNumber = null)
     {
         var customer = new Customer
         {
@@ -440,15 +358,16 @@ internal class UserInterface
             PhoneNumber = phoneNumber
         };
 
-        _dbContext.Customers.Add(customer);
-        _dbContext.SaveChanges();
+        await _dbContext.Customers.AddAsync(customer);
+        await _dbContext.SaveChangesAsync();
 
         _currentShoppingCart.CustomerId = customer.Id;
-        _dbContext.SaveChanges();
+        await _dbContext.SaveChangesAsync();
     }
-    private List<string> GetCategories()
+
+    private async Task<List<string>> GetCategoriesAsync()
     {
-        var categories = _dbContext.ProductCategories.ToList();
+        var categories = await _dbContext.ProductCategories.ToListAsync();
         var results = new List<string>();
         results.Add("0. Tillbaka");
         foreach (var category in categories)
@@ -457,6 +376,7 @@ internal class UserInterface
         }
         return results;
     }
+
     private List<string> GetMenuItems<TEnum>() where TEnum : Enum
     {
         var results = new List<string>();

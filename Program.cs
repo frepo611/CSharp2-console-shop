@@ -5,9 +5,10 @@ using Microsoft.EntityFrameworkCore;
 using Data;
 using Models;
 
+
 internal class Program
 {
-    private static void Main(string[] args)
+    private static async Task Main(string[] args)
     {
         // Set console window size
         //Console.SetWindowSize(200, 60);
@@ -29,6 +30,6 @@ internal class Program
         productSeeder.Seed();
 
         var ui = new UserInterface(dbContext);
-        ui.Start();
+        await ui.StartAsync();
     }
 }
