@@ -69,5 +69,20 @@ internal class Menues
         Ändra_produkt,
         Till_kassan,
     }
+    public enum CheckoutDelivery
+    {
+        Avbryt = 0,
+        Välj_leveranssätt,
+    }
+    public enum CheckoutPayment
+    {
+        Avbryt = 0,
+        Välj_betalningssätt,
+    }
+    public enum CheckoutConfirmation
+    {
+        Avbryt = 0,
+        Bekräfta_order,
+    }
 }
 

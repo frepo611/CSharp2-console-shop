@@ -1,5 +1,6 @@
 ﻿using consoleshoppen.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Runtime;
 
 namespace consoleshoppen.Data;
 
@@ -15,6 +16,8 @@ internal class UserInterface
     private Window? _categoryMenu;
     private Window? _productsInCategoryWindow;
     private Window? _shoppingCartWindow;
+    private Window? _deliveryMethodMenu;
+    private Window? _paymentMethodMenu;
     private readonly Window _addProductsToCartMenu;
     private Window? _productWindow;
     private ShoppingCart? _currentShoppingCart;
@@ -22,6 +25,10 @@ internal class UserInterface
     private readonly Window _firstMenu;
     private Customer? _currentCustomer;
     private readonly Window _currentCustomerWindow;
+    private readonly Window _checkoutDeliveryMenu;
+    private readonly Window _checkoutPaymentMenu;
+    private readonly Window _checkoutConfirmationMenu;
+    private Order? _currentOrder;
 
     public UserInterface(ShopDbContext dbContext)
     {
@@ -36,9 +43,9 @@ internal class UserInterface
         _manageShoppingCartMenu = new Window("Hantera kundkorg", 50, 25, GetMenuItems<Menues.ShoppingCart>());
         _firstMenu = new Window("Välkommen", 0, 5, GetMenuItems<Menues.First>());
         _currentCustomerWindow = new Window("Kunduppgifter", 50, 0, GetCurrentCustomer());
-
-
-
+        _checkoutPaymentMenu = new Window("Välj betalningssätt", 0, 5, GetMenuItems<Menues.CheckoutPayment>());
+        _checkoutDeliveryMenu = new Window("Välj leveranssätt", 0, 5, GetMenuItems<Menues.CheckoutDelivery>());
+        _checkoutConfirmationMenu = new Window("Bekräfta order", 0, 5, GetMenuItems<Menues.CheckoutConfirmation>());
     }
 
     public async Task StartAsync()
@@ -47,6 +54,14 @@ internal class UserInterface
         if (_categoryMenu == null)
         {
             _categoryMenu = new Window("Kategorier", 0, 5, await GetCategoriesAsync());
+        }
+        if (_deliveryMethodMenu == null)
+        {
+            _deliveryMethodMenu = new Window("Leveranssätt", 0, 5, await GetDeliveryMethodsAsync());
+        }
+        if (_paymentMethodMenu == null)
+        {
+            _paymentMethodMenu = new Window("Betalningssätt", 0, 5, await GetPaymentMethodsAsync());
         }
 
         _welcomeWindow.Draw();
@@ -80,7 +95,7 @@ internal class UserInterface
         _mainMenu.Draw();
         if (_currentShoppingCart == null)
         {
-            _currentShoppingCart = new ShoppingCart() { CustomerId = _currentCustomer!.Id};
+            _currentShoppingCart = new ShoppingCart() { CustomerId = _currentCustomer!.Id };
             await _dbContext.ShoppingCarts.AddAsync(_currentShoppingCart);
         }
         if (_shoppingCartWindow == null)
@@ -109,8 +124,8 @@ internal class UserInterface
                         await LogIn();
                         break;
                     case Menues.First.Växla_konto:
-                            //Login();
-                            //break;
+                    //Login();
+                    //break;
                     case Menues.First.Till_butiken:
                         if (_currentCustomer != null)
                         {
@@ -201,6 +216,9 @@ internal class UserInterface
                     case Menues.Main.Hantera_kundkorg:
                         _manageShoppingCartMenu.Draw();
                         await SelectManageShoppingCartMenuItemAsync();
+                        break;
+                    case Menues.Main.Till_kassan:
+                        await CheckoutMenuAsync();
                         break;
                 }
             }
@@ -491,7 +509,143 @@ internal class UserInterface
         _shoppingCartWindow!.UpdateTextRows(_currentShoppingCart!.ToList());
         _shoppingCartWindow.Draw();
     }
+    private async Task CheckoutMenuAsync()
+    {
+        Console.Clear();
+        _currentOrder = new Order() { CustomerId = _currentCustomer!.Id, ShoppingCartId = _currentShoppingCart!.Id };
+        _welcomeWindow.Draw();
+        _currentCustomerWindow.Draw();
+        _shoppingCartWindow!.Draw();
+        _checkoutDeliveryMenu.Draw();
+        await SelectCheckoutDeliveryMenuItemAsync();
+    }
+    private async Task SelectCheckoutDeliveryMenuItemAsync()
+    {
+        while (true)
+        {
+            if (Enum.TryParse<Menues.CheckoutDelivery>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            {
+                switch (choice)
+                {
+                    case Menues.CheckoutDelivery.Avbryt:
+                        await MainMenuAsync();
+                        break;
+                    case Menues.CheckoutDelivery.Välj_leveranssätt:
+                        _deliveryMethodMenu.Draw();
+                        await SelectDeliveryMethodAsync();
+                        break;
+                }
+            }
+        }
+    }
 
+    private async Task SelectDeliveryMethodAsync()
+    {
+        List<int> listedMethods = new();
+        foreach (var row in _deliveryMethodMenu!.TextRows)
+        {
+            listedMethods.Add(int.Parse(row.Split('.')[0]));
+        }
+        Console.Write("Välj metod (enter): ");
+        var cursorPosition = Console.GetCursorPosition();
+        while (true)
+        {
+            var userInput = Console.ReadLine();
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+            Console.Write(new string(' ', Console.BufferWidth));
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+
+            if (userInput == "0")
+            {
+                await MainMenuAsync();
+                break;
+            }
+            else if (int.TryParse(userInput, out var methodId) && listedMethods.Contains(methodId))
+            {
+                _currentOrder!.ShippingMethodId = methodId;
+                await _dbContext.SaveChangesAsync();
+                _paymentMethodMenu!.Draw();
+                await SelectCheckoutPaymentMethodAsync();
+                break;
+            }
+        }
+    }
+
+    private async Task SelectCheckoutPaymentMethodAsync()
+    {
+        List<int> listedMethods = new();
+        foreach (var row in _paymentMethodMenu!.TextRows)
+        {
+            listedMethods.Add(int.Parse(row.Split('.')[0]));
+        }
+        Console.Write("Välj metod (enter): ");
+        var cursorPosition = Console.GetCursorPosition();
+        while (true)
+        {
+            var userInput = Console.ReadLine();
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+            Console.Write(new string(' ', Console.BufferWidth));
+            Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+
+            if (userInput == "0")
+            {
+                await MainMenuAsync();
+                break;
+            }
+            else if (int.TryParse(userInput, out var methodId) && listedMethods.Contains(methodId))
+            {
+                _currentOrder!.PaymentMethodId = methodId;
+                await _dbContext.SaveChangesAsync();
+                _checkoutConfirmationMenu.Draw();
+                DrawOrderConfirmationInfo();
+                //await Select();
+                break;
+            }
+        }
+    }
+
+    private void DrawOrderConfirmationInfo()
+    {
+        var orderDetails = new List<string>();
+        var orderconfirmationWindow = new Window($"Order {_currentOrder!.Id}", 20, 20, orderDetails);
+        int count = _currentShoppingCart!.ToList().Count();
+        var costOfCart = (decimal)_currentShoppingCart.Items.Sum(item => item.Product.Price * item.Quantity);
+        orderDetails.AddRange(_currentShoppingCart.ToList().Take(count - 1));
+        var shippingMethod = _dbContext.ShippingMethods.FirstOrDefault(pm => pm.Id == _currentOrder.ShippingMethodId);
+        if (shippingMethod != null)
+        {
+            orderDetails.Add($"{shippingMethod.Name} - {shippingMethod.Price:c}");
+        }
+        var paymentMethod = _dbContext.PaymentMethods.FirstOrDefault(pm => pm.Id == _currentOrder.PaymentMethodId);
+        if (paymentMethod != null)
+        {
+            orderDetails.Add($"{paymentMethod.Name} {shippingMethod!.Price + costOfCart}");
+        }
+        orderconfirmationWindow.Draw();
+    }
+
+    private async Task<List<string>> GetPaymentMethodsAsync()
+    {
+        var methods = await _dbContext.PaymentMethods.ToListAsync();
+        var results = new List<string>();
+        results.Add("0. Tillbaka");
+        foreach (var method in methods)
+        {
+            results.Add($"{method.Id}. {method.Name}");
+        }
+        return results;
+    }
+    private async Task<List<string>> GetDeliveryMethodsAsync()
+    {
+        var methods = await _dbContext.ShippingMethods.ToListAsync();
+        var results = new List<string>();
+        results.Add("0. Tillbaka");
+        foreach (var method in methods)
+        {
+            results.Add($"{method.Id}. {method.Name}");
+        }
+        return results;
+    }
     private async Task<List<string>> GetCategoriesAsync()
     {
         var categories = await _dbContext.ProductCategories.ToListAsync();
