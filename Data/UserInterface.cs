@@ -39,7 +39,6 @@ internal class UserInterface
         _adminMenu = new Window("Administration", 0, 5, GetMenuItems<Menues.Admin>());
         _manageProductsMenu = new Window("Hantera produkter", 0, 5, GetMenuItems<Menues.ManageProducts>());
         _addProductsToCartMenu = new Window("Lägg i varukorg", 100, 0, GetMenuItems<Menues.AddProductsToCart>());
-        //_shoppingCartWindow = new Window("Kundkorg", 0, 25, _currentShoppingCart.ToList());
         _manageShoppingCartMenu = new Window("Hantera kundkorg", 50, 25, GetMenuItems<Menues.ShoppingCart>());
         _firstMenu = new Window("Välkommen", 0, 5, GetMenuItems<Menues.First>());
         _currentCustomerWindow = new Window("Kunduppgifter", 50, 0, GetCurrentCustomer());
@@ -117,6 +116,9 @@ internal class UserInterface
                     case Menues.First.Stäng_butiken:
                         Environment.Exit(0);
                         break;
+                    case Menues.First.Administrera:
+                        Administrate();
+                        break;
                     case Menues.First.Skapa_nytt_konto:
                         await CreateAccount();
                         break;
@@ -141,6 +143,104 @@ internal class UserInterface
                 }
             }
         }
+    }
+
+    private async Task Administrate()
+    {
+        Console.Clear();
+        _adminMenu.Draw();
+        await SelectAdminMenuItemAsync();
+    }
+
+    private async Task SelectAdminMenuItemAsync()
+    {
+        while (true)
+        {
+            if (Enum.TryParse<Menues.Admin>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            {
+                switch (choice)
+                {
+                    case Menues.Admin.Tillbaka:
+                        await MainMenuAsync();
+                        break;
+                    case Menues.Admin.Hantera_produkter:
+                        await ManageProducts();
+                        break;
+                    case Menues.Admin.Hantera_kategorier:
+                        break;
+                    case Menues.Admin.Hantera_leverantörer:
+                        break;
+                    case Menues.Admin.Hantera_kunder:
+                        break;
+                }
+            }
+        }
+    }
+
+    private async Task ManageProducts()
+    {
+        _manageProductsMenu.Draw();
+        await SelectManageProductsItem();
+    }
+
+    private async Task SelectManageProductsItem()
+    {
+        while (true)
+        {
+            if (Enum.TryParse<Menues.ManageProducts>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            {
+                switch (choice)
+                {
+                    case Menues.ManageProducts.Tillbaka:
+                        await Administrate();
+                        break;
+                    case Menues.ManageProducts.Uppdatera_produkt:
+                        await UpdateProductAsync();
+                        break;
+                    case Menues.ManageProducts.Lägg_till_produkt:
+                        await AddProductAsync();
+                        break;
+                }
+            }
+        }
+    }
+
+    private async Task AddProductAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    private async Task UpdateProductAsync()
+    {
+        Console.WriteLine("Ange produkt att uppdatera: ");
+        int productId = int.Parse(Console.ReadLine()!);
+        var product = await _dbContext.Products.FindAsync(productId);
+        if (product == null)
+        {
+            Console.WriteLine("Kunde inte hitta produkten.");
+            Console.ReadKey();
+            await ManageProducts();
+        }
+        else
+        {
+            Console.WriteLine($"Uppdatera namn: {product.Name}");
+            Console.Write("Ange nytt namn: ");
+            product.Name = Console.ReadLine()!;
+            Console.WriteLine($"Uppdatera pris: {product.Price:c}");
+            Console.Write("Ange nytt pris: ");
+            product.Price = decimal.Parse(Console.ReadLine()!);
+            Console.WriteLine($"Uppdatera beskrivning: {product.Description}");
+            Console.Write("Ange ny beskrivning: ");
+            product.Description = Console.ReadLine();
+            Console.WriteLine($"Uppdatera lagersaldo: {product.Stock}");
+            Console.Write("Ange nytt lagersaldo: ");
+            product.Stock = int.Parse(Console.ReadLine()!);
+            await _dbContext.SaveChangesAsync();
+            Console.WriteLine("Produkten är uppdaterad.");
+            Console.ReadKey();
+            await ManageProducts();
+        }
+
     }
 
     private async Task LogIn()
@@ -186,11 +286,11 @@ internal class UserInterface
         Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
         int countryId = int.Parse(Console.ReadLine()!);
         var newCustomer = new Customer() { Address = address!, City = city!, Email = email!, FirstName = firstName!, LastName = lastName!, ZipCode = zipCode!, CountryId = countryId, PhoneNumber = phoneNumber };
-        _dbContext.Customers.Add(newCustomer);
         _currentCustomer = newCustomer;
+        _dbContext.Customers.Add(_currentCustomer);
+        await _dbContext.SaveChangesAsync();
         await StartAsync();
 
-        await _dbContext.SaveChangesAsync();
 
     }
     private async Task SelectMainMenuItemAsync()
@@ -241,6 +341,7 @@ internal class UserInterface
                         await SelectProductInCartAsync();
                         break;
                     case Menues.ShoppingCart.Till_kassan:
+                        await CheckoutMenuAsync();
                         break;
                 }
             }
@@ -297,26 +398,7 @@ internal class UserInterface
                 break;
             }
         }
-        if (newProductQuantity == 0)
-        {
-            _currentShoppingCart.Items.RemoveAll(p => p.ProductId == productId);
-        }
-        else if (newProductQuantity < item.Quantity)
-        {
-            int removeCount = item.Quantity - newProductQuantity;
-            for (int i = 0; i < removeCount; i++)
-            {
-                _currentShoppingCart.Items.Remove(_currentShoppingCart.Items.First(p => p.ProductId == productId));
-            }
-        }
-        else if (newProductQuantity > item.Quantity)
-        {
-            int addCount = newProductQuantity - item.Quantity;
-            for (int i = 0; i < addCount; i++)
-            {
-                _currentShoppingCart.Items.Add(item);
-            }
-        }
+        item.Quantity = newProductQuantity;
         _dbContext.SaveChangesAsync();
         UpdateShoppingCartWindow();
         Console.SetCursorPosition(0, cursorPosition.Top);
@@ -608,7 +690,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.CheckoutConfirmation>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput<Menues.CheckoutConfirmation>(out var choice))
             {
                 switch (choice)
                 {
@@ -617,7 +699,20 @@ internal class UserInterface
                         break;
                     case Menues.CheckoutConfirmation.Bekräfta_order:
                         _dbContext.Orders.Add(_currentOrder!);
+
+                        // Update stock for each product in the order
+                        foreach (var item in _currentShoppingCart!.Items)
+                        {
+                            var product = await _dbContext.Products.FindAsync(item.ProductId);
+                            if (product != null)
+                            {
+                                product.Stock -= item.Quantity;
+                            }
+                        }
+
                         await _dbContext.SaveChangesAsync();
+                        _currentOrder = null;
+                        _currentShoppingCart = null;
                         await MainMenuAsync();
                         break;
                 }
@@ -691,5 +786,11 @@ internal class UserInterface
     private async Task<List<string>> GetCountryListAsync()
     {
         return await _dbContext.Countries.Select(c => $"{c.Id,3}. {c.Name}").ToListAsync();
+    }
+    private static bool TryParseInput<T>(out T input) where T : struct
+    {
+        var rawInput = Console.ReadKey(true).KeyChar.ToString();
+
+        return Enum.TryParse<T>(rawInput, out input);
     }
 }
