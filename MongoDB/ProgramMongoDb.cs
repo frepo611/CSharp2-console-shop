@@ -4,7 +4,7 @@ using consoleshoppen.Data;
 using consoleshoppen.Models;
 using MongoDB.Driver;
 
-namespace consoleshoppen;
+namespace consoleshoppen.MongoDB;
 
 internal class Program
 {
@@ -35,11 +35,11 @@ internal class Program
         await ui.StartAsync();
     }
 
-    private static IMongoCollection<MongoDB.Order> GetMongoOrderCollection(IConfiguration configuration)
+    private static IMongoCollection<Order> GetMongoOrderCollection(IConfiguration configuration)
     {
         var mongoDBConnection = configuration.GetConnectionString("MongoDBConnection");
         var client = new MongoClient(mongoDBConnection);
         var database = client.GetDatabase("consoleShoppen");
-        return database.GetCollection<MongoDB.Order>("order");
+        return database.GetCollection<Order>("order");
     }
 }
