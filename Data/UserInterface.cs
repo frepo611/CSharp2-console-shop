@@ -109,7 +109,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.First>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.First choice))
             {
                 switch (choice)
                 {
@@ -156,7 +156,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.Admin>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.Admin choice))
             {
                 switch (choice)
                 {
@@ -187,7 +187,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.ManageProducts>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.ManageProducts choice))
             {
                 switch (choice)
                 {
@@ -297,7 +297,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.Main>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.Main choice))
             {
                 switch (choice)
                 {
@@ -329,7 +329,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.ShoppingCart>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.ShoppingCart choice))
             {
                 switch (choice)
                 {
@@ -411,7 +411,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.Shop>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.Shop choice))
             {
                 switch (choice)
                 {
@@ -542,7 +542,7 @@ internal class UserInterface
         _addProductsToCartMenu.Draw();
         while (true)
         {
-            if (Enum.TryParse<Menues.AddProductsToCart>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.AddProductsToCart choice))
             {
                 switch (choice)
                 {
@@ -605,7 +605,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (Enum.TryParse<Menues.CheckoutDelivery>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            if (TryParseInput(out Menues.CheckoutDelivery choice))
             {
                 switch (choice)
                 {
@@ -690,7 +690,7 @@ internal class UserInterface
     {
         while (true)
         {
-            if (TryParseInput<Menues.CheckoutConfirmation>(out var choice))
+            if (TryParseInput(out Menues.CheckoutConfirmation choice))
             {
                 switch (choice)
                 {
