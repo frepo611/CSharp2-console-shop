@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using consoleshoppen.Models;
 
@@ -11,9 +12,11 @@ using consoleshoppen.Models;
 namespace consoleshoppen.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
-    partial class ShopDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250131011531_WhatNwp")]
+    partial class WhatNwp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -193,6 +196,9 @@ namespace consoleshoppen.Migrations
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("ShoppingCartId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Stock")
                         .HasColumnType("int");
 
@@ -200,6 +206,8 @@ namespace consoleshoppen.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ShoppingCartId");
 
                     b.HasIndex("SupplierId");
 
@@ -259,35 +267,7 @@ namespace consoleshoppen.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CustomerId");
-
                     b.ToTable("ShoppingCarts");
-                });
-
-            modelBuilder.Entity("consoleshoppen.Models.ShoppingCartItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ProductId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
-
-                    b.Property<int>("ShoppingCartId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("ShoppingCartId");
-
-                    b.ToTable("ShoppingCartItem");
                 });
 
             modelBuilder.Entity("consoleshoppen.Models.Supplier", b =>
@@ -369,41 +349,15 @@ namespace consoleshoppen.Migrations
 
             modelBuilder.Entity("consoleshoppen.Models.Product", b =>
                 {
+                    b.HasOne("consoleshoppen.Models.ShoppingCart", null)
+                        .WithMany("Products")
+                        .HasForeignKey("ShoppingCartId");
+
                     b.HasOne("consoleshoppen.Models.Supplier", null)
                         .WithMany("Products")
                         .HasForeignKey("SupplierId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("consoleshoppen.Models.ShoppingCart", b =>
-                {
-                    b.HasOne("consoleshoppen.Models.Customer", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-                });
-
-            modelBuilder.Entity("consoleshoppen.Models.ShoppingCartItem", b =>
-                {
-                    b.HasOne("consoleshoppen.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("consoleshoppen.Models.ShoppingCart", "ShoppingCart")
-                        .WithMany("Items")
-                        .HasForeignKey("ShoppingCartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("ShoppingCart");
                 });
 
             modelBuilder.Entity("consoleshoppen.Models.Order", b =>
@@ -413,7 +367,7 @@ namespace consoleshoppen.Migrations
 
             modelBuilder.Entity("consoleshoppen.Models.ShoppingCart", b =>
                 {
-                    b.Navigation("Items");
+                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("consoleshoppen.Models.Supplier", b =>

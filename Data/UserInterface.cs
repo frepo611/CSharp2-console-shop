@@ -81,6 +81,7 @@ internal class UserInterface
         if (_currentShoppingCart == null)
         {
             _currentShoppingCart = new ShoppingCart() { CustomerId = _currentCustomer!.Id};
+            await _dbContext.ShoppingCarts.AddAsync(_currentShoppingCart);
         }
         if (_shoppingCartWindow == null)
         {
@@ -136,8 +137,12 @@ internal class UserInterface
         {
             Console.WriteLine("Kunde inte hitta kund med det id:t.");
             Console.ReadKey();
-
             await StartAsync();
+        }
+        else
+        {
+            _currentCustomerWindow.UpdateTextRows(GetCurrentCustomer());
+            _currentCustomerWindow.Draw();
         }
     }
 
@@ -248,7 +253,7 @@ internal class UserInterface
                 await SelectCategoryAsync();
                 break;
             }
-            else if (int.TryParse(userInput, out productId) && _currentShoppingCart.Products.Select(p => p.Id).Contains(productId))
+            else if (int.TryParse(userInput, out productId) && _currentShoppingCart.Items.Select(p => p.ProductId).Contains(productId))
             {
                 EditProductInCart(productId);
                 break;
@@ -263,9 +268,8 @@ internal class UserInterface
         Console.Write(new string(' ', Console.BufferWidth));
         Console.SetCursorPosition(0, cursorPosition.Top);
 
-        Product? product = _currentShoppingCart!.Products.Where(p => p.Id == productId).First();
-        int productQuantity = _currentShoppingCart.Products.Where(p => p.Id == productId).Count();
-        Console.Write($"Det ligger {productQuantity} stycken {product.Name} i kundkorgen. Ange nytt antal: ");
+        ShoppingCartItem? item = _currentShoppingCart!.Items.Where(p => p.ProductId == productId).First();
+        Console.Write($"Det ligger {item.Quantity} stycken {item.Product.Name} i kundkorgen. Ange nytt antal: ");
         int newProductQuantity;
         while (true)
         {
@@ -277,22 +281,22 @@ internal class UserInterface
         }
         if (newProductQuantity == 0)
         {
-            _currentShoppingCart.Products.RemoveAll(p => p.Id == productId);
+            _currentShoppingCart.Items.RemoveAll(p => p.ProductId == productId);
         }
-        else if (newProductQuantity < productQuantity)
+        else if (newProductQuantity < item.Quantity)
         {
-            int removeCount = productQuantity - newProductQuantity;
+            int removeCount = item.Quantity - newProductQuantity;
             for (int i = 0; i < removeCount; i++)
             {
-                _currentShoppingCart.Products.Remove(_currentShoppingCart.Products.First(p => p.Id == productId));
+                _currentShoppingCart.Items.Remove(_currentShoppingCart.Items.First(p => p.ProductId == productId));
             }
         }
-        else if (newProductQuantity > productQuantity)
+        else if (newProductQuantity > item.Quantity)
         {
-            int addCount = newProductQuantity - productQuantity;
+            int addCount = newProductQuantity - item.Quantity;
             for (int i = 0; i < addCount; i++)
             {
-                _currentShoppingCart.Products.Add(product);
+                _currentShoppingCart.Items.Add(item);
             }
         }
         _dbContext.SaveChangesAsync();
@@ -301,7 +305,6 @@ internal class UserInterface
         Console.Write(new string(' ', Console.BufferWidth));
         Console.SetCursorPosition(0, cursorPosition.Top);
         Console.WriteLine("Kundkorgen är uppdaterad.");
-
     }
 
     private async Task SelectShopMenuItemAsync()
@@ -468,7 +471,16 @@ internal class UserInterface
             Console.WriteLine("Produkten kunde inte hittas.");
             return;
         }
-        _currentShoppingCart!.Products.Add(product);
+        var item = _currentShoppingCart!.Items.Find(i => i.ProductId == productId);
+        if (item == null)
+        {
+            item = new ShoppingCartItem { ProductId = productId, Product = product, ShoppingCartId = _currentShoppingCart.Id, Quantity = 1 };
+            _currentShoppingCart.Items.Add(item);
+        }
+        else
+        {
+            item.Quantity++;
+        }
         await _dbContext.SaveChangesAsync();
         UpdateShoppingCartWindow();
         Console.WriteLine("Produkten har lagts till i kundkorgen.");
@@ -476,7 +488,7 @@ internal class UserInterface
 
     private void UpdateShoppingCartWindow()
     {
-        _shoppingCartWindow.UpdateTextRows(_currentShoppingCart.ToList());
+        _shoppingCartWindow!.UpdateTextRows(_currentShoppingCart!.ToList());
         _shoppingCartWindow.Draw();
     }
 

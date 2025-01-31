@@ -1,10 +1,9 @@
-﻿using consoleshoppen.MongoDB.Bson;
-
+﻿using consoleshoppen.Models;
 namespace consoleshoppen.MongoDB;
 
 public class Order
 {
-    public ObjectId Id { get; set; }
+    public Guid Id { get; set; }
     public required Customer Customer { get; set; }
     public required DateTime OrderDate { get; set; }
     public required ShippingMethod ShippingMethod { get; set; }
