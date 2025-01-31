@@ -5,6 +5,7 @@ internal class Menues
     public enum First
     {
         Stäng_butiken = 0,
+        Administrera,
         Skapa_nytt_konto,
         Logga_in,
         Växla_konto,
@@ -39,7 +40,6 @@ internal class Menues
     {
         Tillbaka = 0,
         Lägg_till_produkt,
-        Ta_bort_produkt,
         Uppdatera_produkt,
     }
 
@@ -47,7 +47,6 @@ internal class Menues
     {
         Tillbaka = 0,
         Lägg_till_kategori,
-        Ta_bort_kategori,
         Uppdatera_kategori,
     }
 
