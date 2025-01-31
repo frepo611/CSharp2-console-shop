@@ -3,10 +3,8 @@
     public class ShoppingCart
     {
         public int Id { get; set; }
-        public int? CustomerId { get; set; } // Nullable CustomerId for temporary cart
+        public int CustomerId { get; set; }
         public List<Product> Products { get; set; } = new();
-        // Navigation properties
-        public Customer? Customer { get; set; }
         public List<string> ToList()
         {
             var result = new List<string>();
