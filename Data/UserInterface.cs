@@ -598,8 +598,29 @@ internal class UserInterface
                 await _dbContext.SaveChangesAsync();
                 _checkoutConfirmationMenu.Draw();
                 DrawOrderConfirmationInfo();
-                //await Select();
+                await SelectCheckoutConfirmationAsync();
                 break;
+            }
+        }
+    }
+
+    private async Task SelectCheckoutConfirmationAsync()
+    {
+        while (true)
+        {
+            if (Enum.TryParse<Menues.CheckoutConfirmation>(Console.ReadKey(true).KeyChar.ToString(), out var choice))
+            {
+                switch (choice)
+                {
+                    case Menues.CheckoutConfirmation.Avbryt:
+                        await MainMenuAsync();
+                        break;
+                    case Menues.CheckoutConfirmation.Bekräfta_order:
+                        _dbContext.Orders.Add(_currentOrder!);
+                        await _dbContext.SaveChangesAsync();
+                        await MainMenuAsync();
+                        break;
+                }
             }
         }
     }
