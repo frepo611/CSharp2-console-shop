@@ -1,10 +1,10 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.EntityFrameworkCore;
-using consoleshoppen.Data;
-using consoleshoppen.Models;
+using ConsolesShoppen.Data;
+using ConsolesShoppen.Models;
 using MongoDB.Driver;
 
-namespace consoleshoppen.MongoDB;
+namespace ConsolesShoppen.MongoDB;
 
 internal class ProgramMOngoDb
 {

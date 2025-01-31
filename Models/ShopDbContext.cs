@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-namespace consoleshoppen.Models;
+namespace ConsolesShoppen.Models;
 
 public class ShopDbContext : DbContext
 {

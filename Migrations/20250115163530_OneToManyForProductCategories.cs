@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace consoleshoppen.Migrations
+namespace ConsolesShoppen.Migrations
 {
     /// <inheritdoc />
     public partial class OneToManyForProductCategories : Migration

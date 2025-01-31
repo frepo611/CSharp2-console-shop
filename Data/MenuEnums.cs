@@ -1,4 +1,4 @@
-﻿namespace consoleshoppen.Data;
+﻿namespace ConsolesShoppen.Data;
 
 internal class Menues
 {

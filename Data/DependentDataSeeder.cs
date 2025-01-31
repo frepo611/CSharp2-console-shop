@@ -1,6 +1,6 @@
-using consoleshoppen.Models;
+using ConsolesShoppen.Models;
 
-namespace consoleshoppen.Data;
+namespace ConsolesShoppen.Data;
 
 public class DependentDataSeeder
 {

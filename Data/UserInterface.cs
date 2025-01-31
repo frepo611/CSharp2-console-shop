@@ -1,8 +1,8 @@
-﻿using consoleshoppen.Models;
+﻿using ConsolesShoppen.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime;
 
-namespace consoleshoppen.Data;
+namespace ConsolesShoppen.Data;
 
 
 internal class UserInterface
@@ -117,7 +117,7 @@ internal class UserInterface
                         Environment.Exit(0);
                         break;
                     case Menues.First.Administrera:
-                        Administrate();
+                        await AdministrateAsync();
                         break;
                     case Menues.First.Skapa_nytt_konto:
                         await CreateAccount();
@@ -145,7 +145,7 @@ internal class UserInterface
         }
     }
 
-    private async Task Administrate()
+    private async Task AdministrateAsync()
     {
         Console.Clear();
         _adminMenu.Draw();
@@ -192,7 +192,7 @@ internal class UserInterface
                 switch (choice)
                 {
                     case Menues.ManageProducts.Tillbaka:
-                        await Administrate();
+                        await AdministrateAsync();
                         break;
                     case Menues.ManageProducts.Uppdatera_produkt:
                         await UpdateProductAsync();
@@ -310,7 +310,7 @@ internal class UserInterface
                         _currentCustomerWindow.UpdateTextRows(GetCurrentCustomer());
                         _currentCustomerWindow.Draw();
                         _shopMenu.Draw();
-                        _shoppingCartWindow.Draw();
+                        _shoppingCartWindow!.Draw();
                         await SelectShopMenuItemAsync();
                         break;
                     case Menues.Main.Hantera_kundkorg:
@@ -366,13 +366,13 @@ internal class UserInterface
             {
                 Console.Clear();
                 _welcomeWindow.Draw();
-                _shoppingCartWindow.Draw();
+                _shoppingCartWindow!.Draw();
                 _currentCustomerWindow.Draw();
                 _categoryMenu!.Draw();
                 await SelectCategoryAsync();
                 break;
             }
-            else if (int.TryParse(userInput, out productId) && _currentShoppingCart.Items.Select(p => p.ProductId).Contains(productId))
+            else if (int.TryParse(userInput, out productId) && _currentShoppingCart!.Items.Select(p => p.ProductId).Contains(productId))
             {
                 EditProductInCart(productId);
                 break;
@@ -423,7 +423,7 @@ internal class UserInterface
                         _welcomeWindow.Draw();
                         _categoryMenu!.Draw();
                         _currentCustomerWindow.Draw();
-                        _shoppingCartWindow.Draw();
+                        _shoppingCartWindow!.Draw();
                         await SelectCategoryAsync();
                         break;
                     case Menues.Shop.Hantera_kundkorg:
@@ -450,7 +450,7 @@ internal class UserInterface
             int categoryId;
             var userInput = Console.ReadLine();
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
-            Console.Write(new string(' ', userInput.Length));
+            Console.Write(new string(' ', userInput!.Length));
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
             if (userInput == "0")
             {
@@ -458,7 +458,7 @@ internal class UserInterface
                 _welcomeWindow.Draw();
                 _shopMenu.Draw();
                 _currentCustomerWindow.Draw();
-                _shoppingCartWindow.Draw();
+                _shoppingCartWindow!.Draw();
                 await SelectShopMenuItemAsync();
                 break;
             }
@@ -526,12 +526,12 @@ internal class UserInterface
         var product = await _dbContext.Products.FindAsync(productId);
         if (product == null)
         {
-            _productWindow = new Window("Hittar inte produkten", _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, new List<string> { "" });
+            _productWindow = new Window("Hittar inte produkten", _productsInCategoryWindow!.LowerRightCorner.X, _productsInCategoryWindow.Top, new List<string> { "" });
             _productWindow.Draw();
         }
         else
         {
-            _productWindow = new Window(product.Name, _productsInCategoryWindow.LowerRightCorner.X, _productsInCategoryWindow.Top, product.ToList());
+            _productWindow = new Window(product.Name, _productsInCategoryWindow!.LowerRightCorner.X, _productsInCategoryWindow.Top, product.ToList());
             _productWindow.Draw();
             await ProductSelectionAsync(productId);
         }
@@ -613,7 +613,7 @@ internal class UserInterface
                         await MainMenuAsync();
                         break;
                     case Menues.CheckoutDelivery.Välj_leveranssätt:
-                        _deliveryMethodMenu.Draw();
+                        _deliveryMethodMenu!.Draw();
                         await SelectDeliveryMethodAsync();
                         break;
                 }

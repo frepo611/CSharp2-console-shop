@@ -5,11 +5,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using consoleshoppen.Models;
+using ConsolesShoppen.Models;
 
 #nullable disable
 
-namespace consoleshoppen.Migrations
+namespace ConsolesShoppen.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
     [Migration("20250125152348_RemoveProductVariant")]

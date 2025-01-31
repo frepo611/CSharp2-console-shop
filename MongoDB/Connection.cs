@@ -2,7 +2,7 @@
 using MongoDB.Driver;
 using System.Security.Authentication;
 
-namespace consoleshoppen.MongoDB;
+namespace ConsolesShoppen.MongoDB;
 internal class Connection
 {
     private static MongoClient GetClient()

@@ -1,9 +1,7 @@
-﻿namespace consoleshoppen;
-using System.IO;
-using Microsoft.Extensions.Configuration;
-using Microsoft.EntityFrameworkCore;
-using Data;
-using Models;
+﻿using ConsolesShoppen.Data;
+using ConsolesShoppen.Models;
+
+namespace ConsolesShoppen;
 
 
 internal class Program

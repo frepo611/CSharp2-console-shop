@@ -1,4 +1,4 @@
-﻿namespace consoleshoppen.Models;
+﻿namespace ConsolesShoppen.Models;
 
 public class ProductCategory
 {

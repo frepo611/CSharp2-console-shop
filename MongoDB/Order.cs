@@ -1,5 +1,5 @@
-﻿using consoleshoppen.Models;
-namespace consoleshoppen.MongoDB;
+﻿using ConsolesShoppen.Models;
+namespace ConsolesShoppen.MongoDB;
 
 public class Order
 {

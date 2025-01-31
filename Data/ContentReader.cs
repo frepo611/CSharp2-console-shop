@@ -1,8 +1,8 @@
-namespace consoleshoppen.Data;
+namespace ConsolesShoppen.Data;
 using static ListExtensions;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
-using consoleshoppen.Models;
+using ConsolesShoppen.Models;
 
 public class ContentReader
 {

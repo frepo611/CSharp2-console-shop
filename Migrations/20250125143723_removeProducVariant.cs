@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace consoleshoppen.Migrations
+namespace ConsolesShoppen.Migrations
 {
     /// <inheritdoc />
     public partial class removeProducVariant : Migration
