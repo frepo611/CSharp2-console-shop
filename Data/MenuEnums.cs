@@ -24,6 +24,7 @@ internal class Menues
         Tillbaka = 0,
         Se_kategorier,
         Sök,
+        Till_kassan,
         Hantera_kundkorg,
     }
 
