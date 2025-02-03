@@ -1,6 +1,6 @@
 ﻿using System.Drawing;
 
-namespace ConsolesShoppen.Data;
+namespace ConsoleShoppen.Classes;
 
 public class Window
 {

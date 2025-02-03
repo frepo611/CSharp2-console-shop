@@ -1,4 +1,4 @@
-﻿namespace ConsolesShoppen.Models;
+﻿namespace ConsoleShoppen.Models;
 
 public class Country
 {

@@ -1,7 +1,8 @@
-using ConsolesShoppen.Models;
+using ConsoleShoppen.Classes;
+using ConsoleShoppen.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ConsolesShoppen.Data
+namespace ConsoleShoppen.Data
 {
     public class ProductDataSeeder
     {

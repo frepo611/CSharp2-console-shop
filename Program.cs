@@ -1,7 +1,6 @@
-﻿using ConsolesShoppen.Data;
-using ConsolesShoppen.Models;
-
-namespace ConsolesShoppen;
+﻿using ConsoleShoppen.Classes;
+using ConsoleShoppen.Data;
+namespace ConsoleShoppen;
 
 
 internal class Program
@@ -26,8 +25,9 @@ internal class Program
         dependentSeeder.Seed();
         ProductDataSeeder productSeeder = new(dbContext);
         productSeeder.Seed();
+        var dbManager = new DBManager(dbContext);
 
-        var ui = new UserInterface(dbContext);
+        var ui = new UserInterface(dbManager);
         await ui.StartAsync();
     }
 }

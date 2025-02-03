@@ -1,4 +1,4 @@
-﻿namespace ConsolesShoppen.MongoDB;
+﻿namespace ConsoleShoppen.MongoDB;
 
 public class Customer
 {

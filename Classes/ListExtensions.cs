@@ -1,4 +1,4 @@
-namespace ConsolesShoppen.Data;
+namespace ConsoleShoppen.Classes;
 /// <summary>
 /// Provides extension methods for lists.
 /// </summary>

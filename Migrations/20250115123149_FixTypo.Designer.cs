@@ -4,11 +4,11 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ConsolesShoppen.Models;
+using ConsoleShoppen.Classes;
 
 #nullable disable
 
-namespace ConsolesShoppen.Migrations
+namespace ConsoleShoppen.Migrations
 {
     [DbContext(typeof(ShopDbContext))]
     [Migration("20250115123149_FixTypo")]

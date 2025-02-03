@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ConsolesShoppen.Migrations
+namespace ConsoleShoppen.Migrations
 {
     /// <inheritdoc />
     public partial class ReAddedCartItems : Migration
