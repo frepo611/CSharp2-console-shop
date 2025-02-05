@@ -14,7 +14,7 @@ public class ShopDbContext : DbContext
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderDetail> OrderDetails { get; set; }
     public DbSet<ProductCategory> ProductCategories { get; set; }
-    public DbSet<Product> Products { get; set; }
+    public DbSet<Product> Products { get; set; } 
     public DbSet<ShippingMethod> ShippingMethods { get; set; }
     public DbSet<Supplier> Suppliers { get; set; }
     public DbSet<PaymentMethod> PaymentMethods { get; set; }
@@ -24,7 +24,7 @@ public class ShopDbContext : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        var connectionString = "Server=tcp:frepodb.database.windows.net,1433;Initial Catalog=chsarp2;Persist Security Info=False;User ID=fredrik;Password=drunken3-shun¤-gazette-warships;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
+        var connectionString = "Server=tcp:frepodb.database.windows.net,1433;Initial Catalog=chsarp2;Persist Security Info=True;User ID=fredrik;Password=drunken3-shun¤-gazette-warships;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;";
         optionsBuilder.UseSqlServer(connectionString);
     }
 }

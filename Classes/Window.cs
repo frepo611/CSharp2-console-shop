@@ -8,7 +8,7 @@ public class Window
     public int Left { get; }
     public int Top { get; }
     public List<string> TextRows { get; }
-    public Point LowerRightCorner { get; private set; }
+    public Point LowerRightCorner { get; set; }
 
     public Window(string header, int left, int top, List<string> textRows)
     {

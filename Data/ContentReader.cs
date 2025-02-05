@@ -1,4 +1,4 @@
-using static ListExtensions;
+using static ConsoleShoppen.Classes.ListExtensions;
 using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using ConsoleShoppen.Classes;

@@ -13,7 +13,7 @@ internal class Menues
     }
     public enum Main
     {
-        Stäng_butiken = 0,
+        Tillbaka = 0,
         Handla,
         Hantera_kundkorg,
         Till_kassan,
