@@ -106,6 +106,7 @@ public class DBManager
     {
         await _dbContext.Orders.AddAsync(order);
         await _dbContext.SaveChangesAsync();
+        Console.WriteLine("Ordern är lagd");
     }
 
     //Helper methods
@@ -138,5 +139,18 @@ public class DBManager
        await _dbContext.Customers.AddAsync(currentCustomer);
     }
 
-   
+    internal async Task<string> GetOrderWithLargestValueAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal async Task<Supplier> GetSupplierWithMostProductsInStockAsync()
+    {
+        throw new NotImplementedException();
+    }
+
+    internal async Task<string> GetCustomersPerCountryAsync()
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -7,30 +7,32 @@ namespace ConsoleShoppen.Classes;
 public class UserInterface
 {
     private readonly DBManager _dbManager;
-    private Window _shippingMethodMenu;
-    private Window _paymentMethodMenu;
+    private Window? _shippingMethodMenu;
+    private Window? _paymentMethodMenu;
     private Window _welcomeWindow;
     private Window _mainMenu;
     private Window _shopMenu;
     private Window _adminMenu;
     private Window _manageProductsMenu;
-    private Window _categoryMenu;
-    private Window _productsInCategoryWindow;
-    private Window _shoppingCartWindow;
-    private Window _checkoutWindow;
-    private Window _addToCartMenu;
-    private Window _productWindow;
+    private Window? _categoryMenu;
+    private Window? _productsInCategoryWindow;
+    private Window? _shoppingCartWindow;
+    //private Window _checkoutWindow;
+    //private Window _addToCartMenu;
+    private Window? _productWindow;
     private Window _addProductsToCartMenu;
-    private Window _cartWindow;
+    //private Window _cartWindow;
     private Window _firstMenu;
     private Window _currentCustomerWindow;
-    private Window _checkoutPaymentMenu;
+    private Window?  _checkoutPaymentMenu;
     private Window _checkoutDeliveryMenu;
     private Window _checkoutConfirmationMenu;
     private ShoppingCart? _currentShoppingCart;
     private Customer? _currentCustomer;
     private Window _manageShoppingCartMenu;
     private Order? _currentOrder;
+    private Window? _statisticsMenu;
+    private Window? _orderconfirmationWindow;
     public UserInterface(DBManager dbManager)
     {
         _dbManager = dbManager;
@@ -489,6 +491,10 @@ public class UserInterface
                         await MainMenuAsync();
                         break;
                     case Menues.CheckoutConfirmation.Bekräfta_order:
+                        _currentOrder!.OrderDate = DateTime.Now;
+                        //parse order price
+                        var orderPrice = double.Parse(_orderconfirmationWindow!.TextRows.Last().Split(' ').Last());
+                        _currentOrder.TotalPrice = orderPrice;
                         await _dbManager.CreateOrderAsync(_currentOrder!);
 
                         // Update stock for each product in the order
@@ -566,7 +572,7 @@ public class UserInterface
     private async Task DrawOrderConfirmationInfo()
     {
         var orderDetails = new List<string>();
-        var orderconfirmationWindow = new Window($"Order {_currentOrder!.Id}", 20, 20, orderDetails);
+        _orderconfirmationWindow = new Window($"Order {_currentOrder!.Id}", 20, 20, orderDetails);
         int count = _currentShoppingCart!.ToList().Count();
         var costOfCart = (decimal)_currentShoppingCart.Items.Sum(item => item.Product.Price * item.Quantity);
         orderDetails.AddRange(_currentShoppingCart.ToList().Take(count - 1));
@@ -574,14 +580,14 @@ public class UserInterface
 
         if (shippingMethod != null)
         {
-            orderDetails.Add($"{shippingMethod.Name} - {shippingMethod.Price:c}");
+            orderDetails.Add($"{shippingMethod.Name} {shippingMethod.Price:c}");
         }
         var paymentMethod = await _dbManager.GetPaymentMethodAsync(_currentOrder.ShippingMethodId);
         if (paymentMethod != null)
         {
             orderDetails.Add($"{paymentMethod.Name} {shippingMethod!.Price + costOfCart}");
         }
-        orderconfirmationWindow.Draw();
+        _orderconfirmationWindow.Draw();
     }
     private async Task SelectProductInCartAsync()
     {
@@ -659,7 +665,7 @@ public class UserInterface
                         await StartAsync();
                         break;
                     case Menues.Admin.Hantera_produkter:
-                        await ManageProducts();
+                        await ManageProductsAsync();
                         break;
                     case Menues.Admin.Hantera_kategorier:
                         break;
@@ -667,12 +673,45 @@ public class UserInterface
                         break;
                     case Menues.Admin.Hantera_kunder:
                         break;
+                    case Menues.Admin.Statistik:
+                        await StatisticsMenuAsync();
+                        break;
                 }
             }
         }
     }
 
-    private async Task ManageProducts()
+    private async Task StatisticsMenuAsync()
+    {
+        _statisticsMenu = new Window("Statistik", 0,5, GetMenuItems<Menues.Statistics>());
+        _statisticsMenu.Draw();
+        await SelectStatisticMenuItemAsync();
+    }
+
+    private async Task SelectStatisticMenuItemAsync()
+    {
+        if (TryParseInput(out Menues.Statistics choice))
+        {
+            switch (choice)
+            {
+                case Menues.Statistics.Tillbaka:
+                    await AdministrateAsync();
+                    break;
+                case Menues.Statistics.Största_ordervärde:
+                    Console.Clear();
+                    var order = await _dbManager.GetOrderWithLargestValueAsync();
+                    break;
+                case Menues.Statistics.Leverantör_med_flest_produkter_i_lager:
+                    Supplier supplier = await _dbManager.GetSupplierWithMostProductsInStockAsync();
+                    break;
+                case Menues.Statistics.Kunder_per_land:
+                    var customersPerCountry = await _dbManager.GetCustomersPerCountryAsync();
+                    break;
+            }
+        }
+    }
+
+    private async Task ManageProductsAsync()
     {
         _manageProductsMenu.Draw();
         await SelectManageProductsItem();

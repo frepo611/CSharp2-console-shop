@@ -35,6 +35,7 @@ internal class Menues
         Hantera_kategorier,
         Hantera_leverantörer,
         Hantera_kunder,
+        Statistik,
     }
 
     public enum ManageProducts
@@ -83,6 +84,13 @@ internal class Menues
     {
         Avbryt = 0,
         Bekräfta_order,
+    }
+public enum Statistics
+    {
+        Tillbaka = 0,
+        Leverantör_med_flest_produkter_i_lager,
+        Största_ordervärde,
+        Kunder_per_land,
     }
 }
 
