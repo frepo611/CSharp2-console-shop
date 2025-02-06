@@ -30,6 +30,7 @@ public class UserInterface
     private Window? _statisticsMenu;
     private Window? _orderconfirmationWindow;
     private Window? _supplierMenu;
+    private Window? _featuredProductsWindow;
     public UserInterface(DBManager dbManager)
     {
         _dbManager = dbManager;
@@ -60,6 +61,11 @@ public class UserInterface
         {
             _paymentMethodMenu = new Window("Betalningssätt", 0, 5, await _dbManager.GetPaymentMethodNamesAsync());
         }
+        if (_featuredProductsWindow == null)
+        {
+            _featuredProductsWindow = new Window("Utvalda produkter", 30, 5, await _dbManager.GetFeaturedProductsAsync(3));
+
+        }
 
         _welcomeWindow.Draw();
         _currentCustomerWindow.UpdateTextRows(GetCurrentCustomer());
@@ -73,6 +79,7 @@ public class UserInterface
         _welcomeWindow.Draw();
         _currentCustomerWindow.UpdateTextRows(GetCurrentCustomer());
         _currentCustomerWindow.Draw();
+        _featuredProductsWindow!.Draw();
         _mainMenu.Draw();
         if (_currentShoppingCart == null)
         {
@@ -915,7 +922,12 @@ public class UserInterface
             {
                 product.Price = newPrice;
             }
-
+            Console.WriteLine($"Ska produkten vara utvald? (j/n)");
+            var key = Console.ReadKey(true).Key;
+            if (key == ConsoleKey.J)
+            {
+                product.IsFeatured = true;
+            }
             await _dbManager.UpdateProductAsync(product);
             Console.WriteLine("Produkten är uppdaterad.");
         }

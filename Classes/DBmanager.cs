@@ -157,6 +157,13 @@ public class DBManager
     {
         return await _dbContext.Suppliers.FirstOrDefaultAsync(s => s.Id == supplierId);
     }
+    public async Task<List<string>> GetFeaturedProductsAsync(int productCount)
+    {
+        var featuredProducts = await _dbContext.Products.Where(p => p.IsFeatured).ToListAsync();
+        featuredProducts.Shuffle();
+        var randomFeaturedProducts = featuredProducts.Take(productCount);
+        return randomFeaturedProducts.Select(p => $"{p.Id}. {p.Name} {p.Price:c}").ToList();
+    }
 
     internal async Task<List<string>> GetOrderWithLargestValueAsync()
     {
