@@ -110,6 +110,7 @@ public class DBManager
     {
         await _dbContext.Orders.AddAsync(order);
         await _dbContext.SaveChangesAsync();
+        Console.WriteLine();
         Console.WriteLine("Ordern är lagd");
     }
 
@@ -150,7 +151,7 @@ public class DBManager
 
     public async Task AddCustomerAsync(Customer currentCustomer)
     {
-       await _dbContext.Customers.AddAsync(currentCustomer);
+        await _dbContext.Customers.AddAsync(currentCustomer);
     }
     internal async Task<Supplier?> GetSupplierAsync(int supplierId)
     {
@@ -168,18 +169,37 @@ public class DBManager
                 ORDER BY o.TotalPrice DESC";
 
             var result = await connection.QueryAsync(query);
-            return result.Select(r => $"{r.OrderDate}: {r.TotalPrice} - {r.FirstName} {r.LastName}").ToList();
+            return result.Select(r => $"{r.OrderDate:yyyy-MM-dd HH:mm}: {r.TotalPrice:c}\t{r.FirstName} {r.LastName}").ToList();
         }
     }
 
-    internal async Task<Supplier> GetSupplierWithMostProductsInStockAsync()
+    internal async Task<List<string>> GetSupplierWithMostProductsInStockAsync()
     {
-        throw new NotImplementedException();
-    }
+        using (var connection = new SqlConnection(_dbContext.Database.GetDbConnection().ConnectionString))
+        {
+            var query = @"
+                SELECT SUM(Stock) as Stock, spl.Name FROM Products as prod
+                JOIN Suppliers spl ON spl.Id = prod.SupplierId
+                GROUP BY spl.Name
+                ORDER BY Stock DESC";
 
-    internal async Task<string> GetCustomersPerCountryAsync()
+            var result = await connection.QueryAsync(query);
+            return result.Select(r => $"Produkter i lager: {r.Stock}\tLeverantör: {r.Name}").ToList();
+        } 
+    }
+    internal async Task<List<string>> GetCustomersPerCountryAsync()
     {
-        throw new NotImplementedException();
+        using (var connection = new SqlConnection(_dbContext.Database.GetDbConnection().ConnectionString))
+        {
+            var query = @"
+                SELECT COUNT(Customers.Id) AS Count , Countries.Name FROM Customers
+                JOIN Countries ON Customers.CountryId = Countries.Id
+                GROUP BY Countries.Name
+                ORDER BY Count DESC";
+
+            var result = await connection.QueryAsync(query);
+            return result.Select(r => $"Land: {r.Name}\tAntal kunder: {r.Count}").ToList();
+        }
     }
 
 }

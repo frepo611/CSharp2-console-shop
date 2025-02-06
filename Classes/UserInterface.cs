@@ -17,11 +17,8 @@ public class UserInterface
     private Window? _categoryMenu;
     private Window? _productsInCategoryWindow;
     private Window? _shoppingCartWindow;
-    //private Window _checkoutWindow;
-    //private Window _addToCartMenu;
     private Window? _productWindow;
     private Window _addProductsToCartMenu;
-    //private Window _cartWindow;
     private Window _firstMenu;
     private Window _currentCustomerWindow;
     private Window? _checkoutPaymentMenu;
@@ -701,7 +698,7 @@ public class UserInterface
                     break;
                 case Menues.Statistics.Största_ordervärde:
                     Console.Clear();
-                    Console.WriteLine("Största 3 order");
+                    Console.WriteLine("Största 3 ordrarna");
                     var orders = await _dbManager.GetOrderWithLargestValueAsync();
                     foreach (var order in orders)
                     {
@@ -709,13 +706,33 @@ public class UserInterface
                     }
                     Console.Write("Tryck en tangent");
                     Console.ReadKey();
-                    await AdministrateAsync();
+                    await StatisticsMenuAsync();
                     break;
                 case Menues.Statistics.Leverantör_med_flest_produkter_i_lager:
-                    Supplier supplier = await _dbManager.GetSupplierWithMostProductsInStockAsync();
+                    Console.Clear();
+                    Console.WriteLine("Lagersaldo sorterat efter leverantör");
+                    var suppliers = await _dbManager.GetSupplierWithMostProductsInStockAsync();
+                    foreach (var supplier in suppliers)
+                    {
+                        Console.WriteLine(supplier);
+                    }
+                    Console.Write("Tryck en tangent");
+                    Console.ReadKey();
+                    await StatisticsMenuAsync();
+
                     break;
                 case Menues.Statistics.Kunder_per_land:
+                    Console.Clear();
+                    Console.WriteLine("Antal registrerade kunder sorterade efter land");
                     var customersPerCountry = await _dbManager.GetCustomersPerCountryAsync();
+                    foreach (var customer in customersPerCountry)
+                    {
+                        Console.WriteLine(customer);
+                    }
+                    Console.Write("Tryck en tangent");
+                    Console.ReadKey();
+                    await StatisticsMenuAsync();
+
                     break;
             }
         }
