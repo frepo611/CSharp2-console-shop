@@ -148,7 +148,7 @@ public class UserInterface
                         _currentCustomerWindow.UpdateTextRows(GetCurrentCustomer());
                         _currentCustomerWindow.Draw();
                         _shopMenu.Draw();
-                        _shoppingCartWindow.Draw();
+                        _shoppingCartWindow!.Draw();
                         await SelectShopMenuItemAsync();
                         break;
                     case Menues.Main.Hantera_kundkorg:
@@ -178,7 +178,7 @@ public class UserInterface
                         _welcomeWindow.Draw();
                         _categoryMenu!.Draw();
                         _currentCustomerWindow.Draw();
-                        _shoppingCartWindow.Draw();
+                        _shoppingCartWindow!.Draw();
                         await SelectCategoryAsync();
                         break;
                     case Menues.Shop.Sök:
@@ -227,7 +227,7 @@ public class UserInterface
             int categoryId;
             var userInput = Console.ReadLine();
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
-            Console.Write(new string(' ', userInput.Length));
+            Console.Write(new string(' ', userInput!.Length));
             Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
             if (userInput == "0")
             {
@@ -235,7 +235,7 @@ public class UserInterface
                 _welcomeWindow.Draw();
                 _shopMenu.Draw();
                 _currentCustomerWindow.Draw();
-                _shoppingCartWindow.Draw();
+                _shoppingCartWindow!.Draw();
                 await SelectShopMenuItemAsync();
                 break;
             }
@@ -410,7 +410,7 @@ public class UserInterface
                         await MainMenuAsync();
                         break;
                     case Menues.CheckoutDelivery.Välj_leveranssätt:
-                        _shippingMethodMenu.Draw();
+                        _shippingMethodMenu!.Draw();
                         await SelectShippingMethodAsync();
                         break;
                 }
@@ -474,7 +474,7 @@ public class UserInterface
                 _currentOrder!.PaymentMethodId = methodId;
                 await _dbManager.SaveChangesAsync();
                 _checkoutConfirmationMenu.Draw();
-                DrawOrderConfirmationInfo();
+                await DrawOrderConfirmationInfo();
                 await SelectCheckoutConfirmationAsync();
                 break;
             }
@@ -608,13 +608,13 @@ public class UserInterface
             {
                 Console.Clear();
                 _welcomeWindow.Draw();
-                _shoppingCartWindow.Draw();
+                _shoppingCartWindow!.Draw();
                 _currentCustomerWindow.Draw();
                 _categoryMenu!.Draw();
                 await SelectCategoryAsync();
                 break;
             }
-            else if (int.TryParse(userInput, out productId) && _currentShoppingCart.Items.Select(p => p.ProductId).Contains(productId))
+            else if (int.TryParse(userInput, out productId) && _currentShoppingCart!.Items.Select(p => p.ProductId).Contains(productId))
             {
                 await EditProductInCart(productId);
                 break;
