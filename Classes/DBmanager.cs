@@ -120,17 +120,23 @@ public class DBManager
     }
     public async Task<List<string>> GetCategoryIdAndNamesAsync()
     {
-        return await _dbContext.ProductCategories.Select(pc => $"{pc.Id}. {pc.Name}").ToListAsync();
+        var result = new List<string> { $"0. Tillbaka" };
+        result.AddRange(await _dbContext.ProductCategories.Select(pc => $"{pc.Id}. {pc.Name}").ToListAsync());
+        return result;
     }
 
     public async Task<List<string>> GetPaymentMethodNamesAsync()
     {
-        return await _dbContext.PaymentMethods.Select(pm => $"{pm.Id}. {pm.Name}").ToListAsync();
+        var result = new List<string> { $"0. Tillbaka" };
+        result.AddRange(await _dbContext.PaymentMethods.Select(pm => $"{pm.Id}. {pm.Name}").ToListAsync());
+        return result;
     }
 
     public async Task<List<string>> GetShippingMethodNamesAsync()
     {
-        return await _dbContext.ShippingMethods.Select(sm => $"{sm.Id}. {sm.Name}").ToListAsync();
+        var result = new List<string> { $"0. Tillbaka" };
+        result.AddRange(await _dbContext.ShippingMethods.Select(sm => $"{sm.Id}. {sm.Name}").ToListAsync());
+        return result;
     }
 
     public async Task<List<string>> GetCountryNamesAsync()
