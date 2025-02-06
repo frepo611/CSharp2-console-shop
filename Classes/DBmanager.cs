@@ -71,6 +71,10 @@ public class DBManager
     {
         return await _dbContext.PaymentMethods.FirstOrDefaultAsync(pm => pm.Id == paymentMethodId);
     }
+    public async Task<ProductCategory?> GetProductCategoryAsync(int productCategoryId)
+    {
+        return await _dbContext.ProductCategories.FirstOrDefaultAsync(pc => pc.Id == productCategoryId);
+    }
 
     // ShoppingCart Operations
     public async Task CreateShoppingCartAsync(ShoppingCart order)
@@ -133,15 +137,33 @@ public class DBManager
     {
         return await _dbContext.Countries.Select(country => $"{country.Id}. {country.Name}").ToListAsync();
     }
+    public async Task<List<string>> GetSupplierNamesAsync()
+    {
+        return await _dbContext.Suppliers.Select(spl => $"{spl.Id}. {spl.Name}").ToListAsync();
+    }
 
     public async Task AddCustomerAsync(Customer currentCustomer)
     {
        await _dbContext.Customers.AddAsync(currentCustomer);
     }
-
-    internal async Task<string> GetOrderWithLargestValueAsync()
+    internal async Task<Supplier?> GetSupplierAsync(int supplierId)
     {
-        throw new NotImplementedException();
+        return await _dbContext.Suppliers.FirstOrDefaultAsync(s => s.Id == supplierId);
+    }
+
+    internal async Task<List<string>> GetOrderWithLargestValueAsync()
+    {
+        using (var connection = new SqlConnection(_dbContext.Database.GetDbConnection().ConnectionString))
+        {
+            var query = @"
+                SELECT TOP 3 o.OrderDate, o.TotalPrice, c.FirstName, c.LastName
+                FROM Orders o
+                JOIN Customers c ON o.CustomerID = c.Id
+                ORDER BY o.TotalPrice DESC";
+
+            var result = await connection.QueryAsync(query);
+            return result.Select(r => $"{r.OrderDate}: {r.TotalPrice} - {r.FirstName} {r.LastName}").ToList();
+        }
     }
 
     internal async Task<Supplier> GetSupplierWithMostProductsInStockAsync()
@@ -153,4 +175,5 @@ public class DBManager
     {
         throw new NotImplementedException();
     }
+
 }

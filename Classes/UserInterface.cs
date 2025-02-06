@@ -24,7 +24,7 @@ public class UserInterface
     //private Window _cartWindow;
     private Window _firstMenu;
     private Window _currentCustomerWindow;
-    private Window?  _checkoutPaymentMenu;
+    private Window? _checkoutPaymentMenu;
     private Window _checkoutDeliveryMenu;
     private Window _checkoutConfirmationMenu;
     private ShoppingCart? _currentShoppingCart;
@@ -33,6 +33,7 @@ public class UserInterface
     private Order? _currentOrder;
     private Window? _statisticsMenu;
     private Window? _orderconfirmationWindow;
+    private Window? _supplierMenu;
     public UserInterface(DBManager dbManager)
     {
         _dbManager = dbManager;
@@ -210,7 +211,7 @@ public class UserInterface
         Console.Write("Gå till menyn \"Se kategorier\" för att köpa produkten.");
         return;
     }
-    
+
     private async Task SelectCategoryAsync()
     {
         List<int> listedCategories = new();
@@ -650,6 +651,7 @@ public class UserInterface
     {
         Console.Clear();
         _adminMenu.Draw();
+        _supplierMenu = new Window("Leverantörer", 0, 5, await _dbManager.GetSupplierNamesAsync());
         await SelectAdminMenuItemAsync();
     }
 
@@ -683,7 +685,7 @@ public class UserInterface
 
     private async Task StatisticsMenuAsync()
     {
-        _statisticsMenu = new Window("Statistik", 0,5, GetMenuItems<Menues.Statistics>());
+        _statisticsMenu = new Window("Statistik", 0, 5, GetMenuItems<Menues.Statistics>());
         _statisticsMenu.Draw();
         await SelectStatisticMenuItemAsync();
     }
@@ -699,7 +701,15 @@ public class UserInterface
                     break;
                 case Menues.Statistics.Största_ordervärde:
                     Console.Clear();
-                    var order = await _dbManager.GetOrderWithLargestValueAsync();
+                    Console.WriteLine("Största 3 order");
+                    var orders = await _dbManager.GetOrderWithLargestValueAsync();
+                    foreach (var order in orders)
+                    {
+                        Console.WriteLine(order);
+                    }
+                    Console.Write("Tryck en tangent");
+                    Console.ReadKey();
+                    await AdministrateAsync();
                     break;
                 case Menues.Statistics.Leverantör_med_flest_produkter_i_lager:
                     Supplier supplier = await _dbManager.GetSupplierWithMostProductsInStockAsync();
@@ -741,7 +751,108 @@ public class UserInterface
 
     private async Task AddProductAsync()
     {
-        throw new NotImplementedException();
+        {
+            List<int> listedCategoryIds = new();
+            List<string> listedCategoryNames = new();
+            _categoryMenu!.Draw();
+            foreach (var row in _categoryMenu!.TextRows)
+            {
+                listedCategoryIds.Add(int.Parse(row.Split('.')[0]));
+                listedCategoryNames.Add(row.Split('.')[1]);
+            }
+            Console.Write("Vilken kategori (enter)? ");
+            var cursorPosition = Console.GetCursorPosition();
+            
+            int categoryId;
+            while (true)
+            {
+                var userInput = Console.ReadLine();
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+                Console.Write(new string(' ', userInput!.Length));
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+
+                if (int.TryParse(userInput, out categoryId) && listedCategoryIds.Contains(categoryId))
+                {
+                    break;
+                }
+            }
+            var existingCategory = await _dbManager.GetProductCategoryAsync(categoryId);
+            List<int> supplierIds = new();
+            List<string> listedSupplierNames = new();
+            _supplierMenu!.Draw();
+            foreach (var row in _supplierMenu!.TextRows)
+            {
+                supplierIds.Add(int.Parse(row.Split('.')[0]));
+                listedSupplierNames.Add(row.Split('.')[1]);
+            }
+            Console.Write("Vilken leverantör (enter)? ");
+            cursorPosition = Console.GetCursorPosition();
+
+            int supplierId;
+            while (true)
+            {
+                var userInput = Console.ReadLine();
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+                Console.Write(new string(' ', userInput!.Length));
+                Console.SetCursorPosition(cursorPosition.Left, cursorPosition.Top);
+
+                if (int.TryParse(userInput, out supplierId) && supplierIds.Contains(supplierId))
+                {
+                    break;
+                }
+            }
+            var existingSupplier = await _dbManager.GetSupplierAsync(supplierId);
+            Console.WriteLine();
+            Console.Write("Ange den nya produktens namn: ");
+            string name = Console.ReadLine()!;
+            Console.WriteLine();
+            Console.WriteLine("Ange beskrivning: ");
+            string description = Console.ReadLine()!;
+            Console.WriteLine();
+            Console.Write("Ange pris: ");
+            decimal price;
+            while (true)
+            {
+                var userInput = Console.ReadLine();
+                if (decimal.TryParse(userInput, out price))
+                {
+                    break;
+                }
+            }
+            Console.Write("Ange lagerantal: ");
+            int stock;
+            while (true)
+            {
+                var userInput = Console.ReadLine();
+                if (int.TryParse(userInput, out stock))
+                {
+                    break;
+                }
+            }
+            Console.WriteLine($"{existingCategory!.Name}: {name}\n{description}\nPris: {price:c}, Lager: {stock}\nLeverantör: {existingSupplier!.Name}");
+            Console.WriteLine("Vill du lägga till produkten? (j/n)");
+            var key = Console.ReadKey(true).Key;
+            if (key == ConsoleKey.J)
+            {
+                var product = new Product()
+                {
+                    Name = name,
+                    Description = description,
+                    Price = price,
+                    Stock = stock,
+                    SupplierId = supplierId,
+                    ProductCategories = new List<ProductCategory> {existingCategory}
+                };
+                await _dbManager.AddProductAsync(product);
+                Console.WriteLine("Produkten är tillagd.");
+                Console.ReadKey();
+                await ManageProductsAsync();
+            }
+            else
+            {
+                await ManageProductsAsync();
+            }
+        }
     }
 
     private List<string> GetCurrentCustomer()
@@ -792,10 +903,6 @@ public class UserInterface
 
             await _dbManager.UpdateProductAsync(product);
             Console.WriteLine("Produkten är uppdaterad.");
-        }
-        else
-        {
-            Console.WriteLine("Ogiltigt produkt-ID.");
         }
     }
     private static bool TryParseInput<T>(out T input) where T : struct
